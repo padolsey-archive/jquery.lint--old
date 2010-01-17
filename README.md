@@ -10,6 +10,10 @@ Include it, **after jQuery** like this:
     
 Now, just use jQuery as you normally would. When you do something that jQuery Lint deems incorrect or a bad practice then you'll receive a warning in the console. Currently, it only works with Firebug (in Firefox). You can easily define another reporting mechanism within the script itself, but there's little reason to; the errors it reports are browser-agnostic, so you may as well do your testing in Firefox w/ Firebug.
 
+###Screenshot
+
+![jquery.lint.js preview](http://img13.imageshack.us/img13/9527/lint.png)
+
 ##What will lint report on?
 
 The reporting level can be set to anywhere between zero (everything off) to three (everything on), via `jQuery.LINT.level`. 
