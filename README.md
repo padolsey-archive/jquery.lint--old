@@ -9,7 +9,7 @@ Tested in jQuery 1.3.2 and 1.4
  * Nested errors as a result of other oversights - e.g. you call `css()` incorrectly which might internally make a call to another method, which may then raise an error.
 
 
-###Intro
+##Intro
 
 *jQuery Lint* is a simple script you can download and use with jQuery. It works over the top of jQuery and diligently reports errors and any incorrect usage of jQuery. It will also, to some extent, offer guidance on best practices and performance concerns.
 
