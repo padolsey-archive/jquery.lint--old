@@ -19,16 +19,14 @@
     
     var alias = 'jQuery',
         
-        console = window.console,
-        
         // Define console if not defined
         // Feel free to edit this
         _console = {
-            warn: console && console.warn || function(){},
-            group: console && console.group || function(){},
-            groupEnd: console && console.groupEnd || function(){},
-            groupCollapsed: console && console.groupCollapsed || function(){},
-            log: console && console.log || function(){}
+            warn: window.console && console.warn || function(){},
+            group: window.console && console.group || function(){},
+            groupEnd: window.console && console.groupEnd || function(){},
+            groupCollapsed: window.console && console.groupCollapsed || function(){},
+            log: window.console && console.log || function(){}
         },
         
         langs = {
@@ -68,7 +66,8 @@
         lint = {
             level: 3,
             special: specialChecks,
-            lang: 'en'
+            lang: 'en',
+            console: _console
         },
         
         // Only cover certain fns under the jQ namespace
@@ -81,8 +80,17 @@
         return;
     }
     
+    ///console.log(api)
+    
+    // Correct API
+    // Yes, it's ugly, but necessary...
+    //////console.log(api.attr)// 444
+    api.jQuery[4].added = '1.3';
+    api.jQuery.push({added:'1.0',arg:[{type:'null',name:'null'}]})
+    api.each[0].arg[1] = api['jQuery.each'][0].arg[2] = {name:'args', type:'Array', optional:true};
     api['jQuery.data'][0].arg[2].type = '*';
-    api['jQuery.each'][0].arg[0].type += ', Collection';
+    api.attr[1].arg[1].type = '*';
+    api['jQuery.each'][0].arg[0].type += ', Array';
     api.triggerHandler[0].arg[1].optional = true;
     api.slice[0].arg[1] = {name:'end',type:'Integer',optional:true};
     
@@ -93,7 +101,7 @@
         locale = langs[lint.lang],
         undefined,
         slice = function(a,s,e) {
-            return Array.prototype.slice.call(a, s, e);
+            return Array.prototype.slice.call(a, s || 0, e || a.length);
         },
         compare = function(a,b) {
             
@@ -178,13 +186,11 @@
                 return this.selector(o);
             },
             Element: function(o) {
-                return o && !!o.nodeName;
+                return o && (!!o.nodeName || o === window);
             },
             Array: function(o) {
-                return isArray(o);
-            },
-            Collection: function(o) {
-                return 'length' in o;
+                // Just check that it's "array-like"
+                return o && o.length !== undefined;
             },
             jQuery: function(o) {
                 return o instanceof _jQuery;
@@ -213,6 +219,9 @@
             },
             Options: function(o) {
                 return isObject(o);
+            },
+            'null': function(o) {
+                return o === null;
             }
         },
         selectorCache = {},
@@ -226,7 +235,8 @@
                     _console.groupEnd();
                 _console.groupEnd();
             }
-        };
+        },
+        internal = false;
     
     function typeCheck(type, arg) {
         
@@ -276,12 +286,12 @@
         if (!sig.arg[0] && (args.length > 1)) {
             return false;
         }
-        
+        ///console.info(sig.arg);
         for (
                 var sigIndex = 0,
                     argIndex = 0,
                     fullLength = Math.max(argLength,sig.arg.length||1);
-                sigIndex < fullLength;
+                sigIndex < fullLength || argIndex < argLength;
                 ++sigIndex
             ) {
             
@@ -291,12 +301,13 @@
                 // Too many args
                 return false;
             }
-            
+            ///console.log(typeCheck(sigArg.type, args[argIndex]), sigArg, args[argIndex]);
             matches = typeCheck(sigArg.type, args[argIndex]);
             
             if (!matches) {
                 if (sigArg.optional) {
-                    if (args[argIndex] === undefined) {
+                    if (args[argIndex] === undefined || args[argIndex] === null) {
+                        ++argIndex;
                         matches = true;
                     }
                     continue;
@@ -322,6 +333,7 @@
         args = shaveArray(args);
         
         var sigs = api[name],
+            _console = lint.console,
             i = 0,
             sig,
             specialCheckResults = (function(){
@@ -344,8 +356,8 @@
             self = this,
             sliced = slice(this, 0, 10),
             withinEvent = lastTriggeredEvent ? lastTriggeredEvent.type : null;
-            
-        if (!sigs || !lint.level) {
+        
+        if (!sigs || !lint.level || internal) {
             return meth.apply(this, args);
         }
         
@@ -359,7 +371,9 @@
                 _console.warn(locale.methodTwice.replace(/%0/, name));
                 _console.groupCollapsed(locale.moreInfo);
                     logEvent();
-                    _console.log(locale.collection, sliced);
+                    if (this instanceof _jQuery) {
+                        _console.log(locale.collection, sliced);
+                    }
                     _console.log(
                         locale.combineCalls
                             .replace(/%0/, name)
@@ -394,7 +408,9 @@
             _console.warn(locale.incorrectCall.replace(/%0/, name));
             _console.groupCollapsed(locale.moreInfo);
                 logEvent();
-                _console.log(locale.collection, sliced);
+                if (this instanceof _jQuery) {
+                    _console.log(locale.collection, sliced);
+                }
                 _console.log(locale.youPassed, args);
                 _console.group(locale.availableSigsInclude);
                     each(sigs, function(i, sig){
@@ -407,7 +423,7 @@
                             (sigArgs ?
                                  sigArgs[0] ?
                                     map(sigArgs, function(sig){
-                                        return sig.optional ? '[' + sig.name + ']' : sig.name;
+                                        return sig ? sig.optional ? '[' + sig.name + ']' : sig.name : [];
                                     }).join(', ') :
                                     sigArgs.name
                             : '') + ')'
@@ -423,7 +439,9 @@
                 if (checkResult && checkResult !== true) {
                     _console.warn(locale.specialCheckFailed.replace(/%0/, name));
                     _console.groupCollapsed(locale.moreInfo);
-                        _console.log(locale.collection, sliced);
+                        if (this instanceof _jQuery) {
+                            _console.log(locale.collection, sliced);
+                        }
                         _console.log(checkResult);
                     _console.groupEnd();
                 }
@@ -448,10 +466,14 @@
     _jQuery.fn.init = (function(_init){
         
         return function(s,c) {
-        
+            
             var ret = coverMethod.call(this, 'jQuery', function(){
-                return new _init(s,c);    
-            }, arguments);
+                    //internal = true;
+                    //var instance = new _init(s, c);
+                    //interal = false;
+                    return new _init(s, c);
+                }, arguments),
+                _console = lint.console;
             
             if (typeof s === 'string' && lint.level > 1) {
                 if (!ret[0]) {
@@ -489,7 +511,12 @@
         }
         _jQuery.fn[i] = (function(meth, name){
             return function() {
-                return coverMethod.call(this, name, meth, arguments);
+                return coverMethod.call(this, name, function(){
+                    internal = true;
+                    var ret = meth.apply(this, arguments);
+                    internal = false;
+                    return ret;
+                }, arguments);
             };
         })(_jQuery.fn[i], i);
     }
@@ -503,7 +530,12 @@
         
         _jQuery[i] = (function(meth, name){
             return function() {
-                return coverMethod.call(this, 'jQuery.' + name, meth, arguments);
+                return coverMethod.call(this, 'jQuery.' + name, function(){
+                    internal = true;
+                    var ret = meth.apply(this, arguments);
+                    internal = false;
+                    return ret;
+                }, arguments);
             };
         })(_jQuery[i], i);
     }
@@ -526,5 +558,5 @@
         
     })(_jQuery.event.add);
     
-    
+   
 })();
