@@ -49,4 +49,15 @@ test('css()', function(){
     
 });
 
+test('selectors', function(){
+    
+    expect(1);
+    
+    var struct = $('<div><a/><a/></div>');
+    
+    $('a', struct);
+    $('a', struct);
+    
+});
+
 })();
