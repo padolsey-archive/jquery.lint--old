@@ -60,4 +60,47 @@ test('selectors', function(){
     
 });
 
+test('jQuery.get()/post()', function(){
+    
+    expect(10);
+    
+    var _ajax = $.ajax;
+    $.ajax=function(){};
+    
+    var xhrs = [
+        
+        // Incorrect
+        $.get('a', 'b', 'c', 'd'),
+        $.get(123456),
+        $.get(function(){}),
+        $.get('a', {}, function(){}, /a/),
+        $.get(),
+        $.post('a', 'b', 'c', 'd'),
+        $.post(123456),
+        $.post(function(){}),
+        $.post('a', {}, function(){}, /a/),
+        $.post(),
+        
+        // Correct
+        $.get('a'),
+        $.get('a', {}),
+        $.get('a', ''),
+        $.get('a', {}, function(){}),
+        $.get('a', function(){}),
+        $.get('a', {}, function(){}, ''),
+        $.get('a', '', function(){}, ''),
+        $.post('a'),
+        $.post('a', {}),
+        $.post('a', ''),
+        $.post('a', {}, function(){}),
+        $.post('a', function(){}),
+        $.post('a', {}, function(){}, ''),
+        $.post('a', '', function(){}, '')
+    
+    ];
+    
+    $.ajax = _ajax;
+    
+});
+
 })();
