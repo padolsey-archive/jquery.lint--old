@@ -218,7 +218,7 @@
         selectorCache = {},
         lastTriggeredEvent = {},
         logEvent = function() {
-            if (lastTriggeredEvent) {
+            if (lastTriggeredEvent && lastTriggeredEvent.event) {
                 _console.groupCollapsed(locale.triggeredBy.replace(/%0/, lastTriggeredEvent.event.type));
                     _console.log(locale.event, lastTriggeredEvent.event);
                     _console.groupCollapsed(locale.handler);
