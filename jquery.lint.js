@@ -293,18 +293,12 @@
             }
             
             matches = typeCheck(sigArg.type, args[argIndex]);
-            console.log(matches, args[argIndex], sigArg);
+            
             if (!matches) {
                 if (sigArg.optional) {
                     if (args[argIndex] === undefined) {
                         matches = true;
                     }
-                    // Sig is optional
-                    //if (argIndex >= argLength -1 && sigIndex === fullLength-1) { /*-1*/
-                        // Is the last arg
-                        //return matches;
-                    //}
-                    // Continue without incrementing arg index (a)
                     continue;
                 } else {
                     // Sig isn't optional, return false
@@ -315,7 +309,7 @@
             ++argIndex;
             
         }
-        console.info(args, matches);
+        
         return matches;
         
     }
