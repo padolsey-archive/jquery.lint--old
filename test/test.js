@@ -3,19 +3,19 @@
 
 var console = jQuery.LINT.console = {
     group:function(a,b,c){
-        window.console.group.apply(null, arguments);  
+        //window.console.group.apply(null, arguments);  
     },
     groupCollapsed:function(a,b,c){
-        window.console.groupCollapsed.apply(null, arguments);    
+        //window.console.groupCollapsed.apply(null, arguments);    
     },
     groupEnd:function(a,b,c){
-        window.console.groupEnd.apply(null, arguments);  
+        //window.console.groupEnd.apply(null, arguments);  
     },
     log:function(a,b,c){
-        window.console.log.apply(null, arguments);  
+        //window.console.log.apply(null, arguments);  
     },
     warn: function(a) {
-        window.console.warn.apply(null, arguments);
+        //window.console.warn.apply(null, arguments);
         ok(true);
     }
 };

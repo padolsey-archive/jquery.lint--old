@@ -96,7 +96,7 @@
     api.triggerHandler[0].arg[1].optional = true;
     api.slice[0].arg[1] = {name:'end',type:'Integer',optional:true};
     
-    // Grab some useful helpers from jQuery
+    
     var version = _jQuery.fn.jquery,
         map = _jQuery.map,
         each = _jQuery.each,
@@ -131,27 +131,6 @@
             return toString.call(obj) === "[object Array]";   
         },
         toString = Object.prototype.toString,
-        isObject = function( obj ) {
-            
-            // Borrowed from jQuery 1.4
-            // (Just encase lint is used with older JQ versions)
-            
-            if ( !obj || toString.call(obj) !== "[object Object]" || obj.nodeType || obj.setInterval ) {
-                return false;
-            }
-            
-            if ( obj.constructor
-                && !hasOwnProperty.call(obj, "constructor")
-                && !hasOwnProperty.call(obj.constructor.prototype, "isPrototypeOf") ) {
-                return false;
-            }
-            
-            var key;
-            for ( key in obj ) {}
-            
-            return key === undefined || hasOwnProperty.call( obj, key );
-        
-        },
         typeToString = function(o) {
             
             if (typeof o === 'string') {
@@ -199,7 +178,7 @@
             },
             Object: function(o) {
                 return toString.call(o) === '[object Object]';
-                return isObject(o);
+                //return isObject(o);
             },
             Function: function(o) {
                 return isFunction(o);
@@ -217,7 +196,7 @@
                 return this.Number(o) && ~~o === o;
             },
             Map: function(o) {
-                return isObject(o);
+                return this.Object(o);
             },
             Options: function(o) {
                 return isObject(o);
