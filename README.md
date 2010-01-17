@@ -70,7 +70,7 @@ You can define **your own special checks** via `jQuery.LINT.special`. For exampl
     
 Other examples:
 
-    jQuery.LINT.special[3]['jQuery.proxy'] = function(deep, o) {
+    jQuery.LINT.special[3]['jQuery.extend'] = function(deep, o) {
         if (!deep) {
             for (var i in o) {
                 if ( jQuery.isPlainObject(o[i]) ) {
