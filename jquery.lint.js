@@ -89,6 +89,7 @@
     
     // Correct API
     // Yes, it's ugly, but necessary...
+    api['jQuery.data'][1].arg[1].optional = true; // Making $.data(.,THIS) optional
     api.each[0].arg[1] = api['jQuery.each'][0].arg[2] = {name:'args', type:'Array', optional:true};
     api['jQuery.data'][0].arg[2].type = '*';
     api.attr[1].arg[1].type = '*';
