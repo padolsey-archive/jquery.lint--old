@@ -48,7 +48,8 @@
                 methodTwice: 'You\'ve called %0(...) more than once on the same jQuery object',
                 triggeredBy: 'Triggered by %0 event',
                 event: 'Event:',
-                handler: 'Handler:'
+                handler: 'Handler:',
+                location: 'Location:'
             }
         },
         
@@ -289,6 +290,19 @@
             return matches;
             
         },
+        logLocation = function() {
+            try {
+                throw new Error();
+            } catch(e) {
+                if (e.stack) {
+                    lint.console.log(
+                        locale.location, (e.stack.split(/\n/g)[4].match(/@(.+?:\d+)/)||[,'NULL'])[1]
+                    );
+                } else {
+                    return null;
+                }
+            }
+        },
         selectorCache = {},
         lastTriggeredEvent = {},
         logEvent = function() {
@@ -302,7 +316,7 @@
             }
         },
         internal = false;
-        
+    
     function coverMethod(name, meth, args) {
         
         args = shaveArray(args);
@@ -385,60 +399,71 @@
         }
         
         if (!signatureMatch) {
-        
-            // Args !== signature
-            _console.warn(locale.incorrectCall.replace(/%0/, name));
-            _console.groupCollapsed(locale.moreInfo);
-                logEvent();
-                if (this instanceof _jQuery) {
-                    _console.log(locale.collection, sliced);
-                }
-                _console.log(locale.youPassed, args);
-                _console.group(locale.availableSigsInclude);
-                    each(sigs, function(i, sig){
-                        if (version < sig.added) {
-                            return;
-                        }
-                        var sigArgs = sig.arg;
-                        _console.log(
-                            name + '(' +
-                            (sigArgs ?
-                                 sigArgs[0] ?
-                                    map(sigArgs, function(sig){
-                                        return sig ? sig.optional ? '[' + sig.name + ']' : sig.name : [];
-                                    }).join(', ') :
-                                    sigArgs.name
-                            : '') + ')'
-                        );
-                    });
+            
+            try {
+                
+                // Args !== signature
+                _console.warn(locale.incorrectCall.replace(/%0/, name));
+                _console.groupCollapsed(locale.moreInfo);
+                    logEvent();
+                    if (this instanceof _jQuery) {
+                        _console.log(locale.collection, sliced);
+                    }
+                    logLocation();
+                    _console.log(locale.youPassed, args);
+                    _console.group(locale.availableSigsInclude);
+                        each(sigs, function(i, sig){
+                            if (version < sig.added) {
+                                return;
+                            }
+                            var sigArgs = sig.arg;
+                            _console.log(
+                                name + '(' +
+                                (sigArgs ?
+                                     sigArgs[0] ?
+                                        map(sigArgs, function(sig){
+                                            return sig ? sig.optional ? '[' + sig.name + ']' : sig.name : [];
+                                        }).join(', ') :
+                                        sigArgs.name
+                                : '') + ')'
+                            );
+                        });
+                    _console.groupEnd();
                 _console.groupEnd();
-            _console.groupEnd();
+                
+            } catch(e) { }
             
         }
         
-        if (specialCheckResults.length) {
-            each(specialCheckResults, function(i, checkResult){
-                if (checkResult && checkResult !== true) {
-                    _console.warn(locale.specialCheckFailed.replace(/%0/, name));
-                    _console.groupCollapsed(locale.moreInfo);
-                        if (this instanceof _jQuery) {
-                            _console.log(locale.collection, sliced);
-                        }
-                        _console.log(checkResult);
-                    _console.groupEnd();
-                }
-            });
-        }
+        try {
+            if (specialCheckResults.length) {
+                each(specialCheckResults, function(i, checkResult){
+                    if (checkResult && checkResult !== true) {
+                        _console.warn(locale.specialCheckFailed.replace(/%0/, name));
+                        _console.groupCollapsed(locale.moreInfo);
+                            if (this instanceof _jQuery) {
+                                _console.log(locale.collection, sliced);
+                            }
+                            _console.log(checkResult);
+                        _console.groupEnd();
+                    }
+                });
+            }
+        } catch(e) { }
+        
         
         try {
             return meth.apply(this, args);
         } catch(e) {
-            _console.warn(
-                locale.errorThrown.replace(/%0/, name), e
-            );
-            _console.groupCollapsed(locale.moreInfo);
-                _console.log(locale.youPassed, args);
-            _console.groupEnd();
+            try {
+                _console.warn(
+                    locale.errorThrown.replace(/%0/, name), e
+                );
+                _console.groupCollapsed(locale.moreInfo);
+                    logLocation();
+                    _console.log(locale.youPassed, args);
+                _console.groupEnd();
+            } catch(e) { }
             return this;
         }
         
@@ -464,26 +489,29 @@
                 
                 }, arguments),
                 _console = lint.console;
-            
-            if (typeof s === 'string' && lint.level > 1) {
-                if (!ret[0]) {
-                    // No elements returned
-                    _console.warn(locale.noElementsFound.replace(/%0/, s));
-                } else {
-                    // Check for identical collection already in cache.
-                    if ( selectorCache[s] && compare(selectorCache[s], ret) ) {
-                        
-                        _console.warn(locale.repeatSelector);
-                        _console.groupCollapsed(locale.info);
-                            logEvent();
-                            _console.log(locale.selector + '"' + s + '"');
-                            _console.log(locale.selectorAdvice);
-                        _console.groupEnd();
-                        
+                
+            try{
+                if (typeof s === 'string' && lint.level > 1) {
+                    if (!ret[0]) {
+                        // No elements returned
+                        _console.warn(locale.noElementsFound.replace(/%0/, s));
+                    } else {
+                        // Check for identical collection already in cache.
+                        if ( selectorCache[s] && compare(selectorCache[s], ret) ) {
+                            
+                            _console.warn(locale.repeatSelector);
+                            _console.groupCollapsed(locale.info);
+                                logEvent();
+                                logLocation();
+                                _console.log(locale.selector + '"' + s + '"');
+                                _console.log(locale.selectorAdvice);
+                            _console.groupEnd();
+                            
+                        }
                     }
+                    selectorCache[s] = ret;
                 }
-                selectorCache[s] = ret;
-            }
+            } catch(e) { }
             
             return ret;
         
