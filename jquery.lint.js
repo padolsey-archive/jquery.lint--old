@@ -94,6 +94,8 @@
     api['jQuery.data'][0].arg[2].type = '*';
     api.attr[1].arg[1].type = '*';
     api['jQuery.each'][0].arg[0].type += ', Array';
+    // extraParam to trigger & triggerHandler IS optional
+    api.trigger[0].arg[1].optional = true;
     api.triggerHandler[0].arg[1].optional = true;
     api.slice[0].arg[1] = {name:'end',type:'Integer',optional:true};
     // Add elem arg to start of args for jQuery.queue
