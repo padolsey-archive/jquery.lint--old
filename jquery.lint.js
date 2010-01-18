@@ -85,7 +85,7 @@
         return;
     }
     
-    ///console.log(api)
+    lint.api = api;
     
     // Correct API
     // Yes, it's ugly, but necessary...
