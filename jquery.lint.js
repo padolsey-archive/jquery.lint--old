@@ -1,7 +1,7 @@
 /**
  * jQuery Lint
  * ---
- * VERSION 0.1
+ * VERSION 0.15
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
  * report any potentially erroneous activity the console.
@@ -68,6 +68,7 @@
             level: 3,
             special: specialChecks,
             lang: 'en',
+            langs: langs,
             console: _console
         },
         
@@ -85,9 +86,6 @@
     
     // Correct API
     // Yes, it's ugly, but necessary...
-    //////console.log(api.attr)// 444
-    api.jQuery[4].added = '1.3';
-    api.jQuery.push({added:'1.0',arg:[{type:'null',name:'null'}]})
     api.each[0].arg[1] = api['jQuery.each'][0].arg[2] = {name:'args', type:'Array', optional:true};
     api['jQuery.data'][0].arg[2].type = '*';
     api.attr[1].arg[1].type = '*';
@@ -99,6 +97,7 @@
     var version = _jQuery.fn.jquery,
         map = _jQuery.map,
         each = _jQuery.each,
+        extend = _jQuery.extend,
         locale = langs[lint.lang],
         undefined,
         slice = function(a,s,e) {
@@ -170,7 +169,8 @@
             },
             Array: function(o) {
                 // Just check that it's "array-like"
-                return o && o.length !== undefined;
+                return o && o.length !== undefined
+                        && typeof o !== 'string' && !isFunction(o);
             },
             jQuery: function(o) {
                 return o instanceof _jQuery;
@@ -204,6 +204,91 @@
                 return o === null;
             }
         },
+        typeCheck = function typeCheck(type, arg) {
+            
+            // Check that argument is of the right type
+            // The types are specified within the API data
+            
+            if ( types[type] ) {
+                return arg !== undefined && types[type](arg);
+            }
+            
+            if ( type.indexOf(',') ) {
+                
+                var split = type.split(/,\s?/g),
+                    i = split.length;
+                    
+                while (i--) {
+                    if (types[split[i]] && types[split[i]](arg)) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
+            
+            return false;
+                
+        },
+        complies = function complies(args, sig) {
+            
+            // Determine if argument list complies with
+            // signature outlined in API.
+            
+            var matches = false,
+                sigArg,
+                argLength = args.length;
+            
+            if (version < sig.added) {
+                // Too new
+                return false;
+            }
+            
+            if (!sig.arg) {
+                return 0 === args.length;
+            }
+            
+            if (!sig.arg[0] && (args.length > 1)) {
+                return false;
+            }
+            ///console.info(sig.arg);
+            for (
+                    var sigIndex = 0,
+                        argIndex = 0,
+                        fullLength = Math.max(argLength,sig.arg.length||1);
+                    sigIndex < fullLength || argIndex < argLength;
+                    ++sigIndex
+                ) {
+                
+                sigArg = sigIndex === 0 ? sig.arg[0] || sig.arg : sig.arg[sigIndex];
+                
+                if (!sigArg) {
+                    // Too many args
+                    return false;
+                }
+                ///console.log(typeCheck(sigArg.type, args[argIndex]), sigArg, args[argIndex]);
+                matches = typeCheck(sigArg.type, args[argIndex]);
+                
+                if (!matches) {
+                    if (sigArg.optional) {
+                        if (args[argIndex] === undefined || args[argIndex] === null) {
+                            ++argIndex;
+                            matches = true;
+                        }
+                        continue;
+                    } else {
+                        // Sig isn't optional, return false
+                        return false;
+                    }
+                }
+                
+                ++argIndex;
+                
+            }
+            
+            return matches;
+            
+        },
         selectorCache = {},
         lastTriggeredEvent = {},
         logEvent = function() {
@@ -217,98 +302,8 @@
             }
         },
         internal = false;
-    
-    function typeCheck(type, arg) {
         
-        // Check that argument is of the right type
-        // The types are specified within the API data
-        
-        if ( types[type] ) {
-            return arg !== undefined && types[type](arg);
-        }
-        
-        if ( type.indexOf(',') ) {
-            
-            var split = type.split(/,\s?/g),
-                i = split.length;
-                
-            while (i--) {
-                if (types[split[i]] && types[split[i]](arg)) {
-                    return true;
-                }
-            }
-            
-            return false;
-        }
-        
-        return false;
-        
-    }
-    
-    function complies(args, sig) {
-        
-        // Determine if argument list complies with
-        // signature outlined in API.
-        
-        var matches = false,
-            sigArg,
-            argLength = args.length;
-        
-        if (version < sig.added) {
-            // Too new
-            return false;
-        }
-        
-        if (!sig.arg) {
-            return 0 === args.length;
-        }
-        
-        if (!sig.arg[0] && (args.length > 1)) {
-            return false;
-        }
-        ///console.info(sig.arg);
-        for (
-                var sigIndex = 0,
-                    argIndex = 0,
-                    fullLength = Math.max(argLength,sig.arg.length||1);
-                sigIndex < fullLength || argIndex < argLength;
-                ++sigIndex
-            ) {
-            
-            sigArg = sigIndex === 0 ? sig.arg[0] || sig.arg : sig.arg[sigIndex];
-            
-            if (!sigArg) {
-                // Too many args
-                return false;
-            }
-            ///console.log(typeCheck(sigArg.type, args[argIndex]), sigArg, args[argIndex]);
-            matches = typeCheck(sigArg.type, args[argIndex]);
-            
-            if (!matches) {
-                if (sigArg.optional) {
-                    if (args[argIndex] === undefined || args[argIndex] === null) {
-                        ++argIndex;
-                        matches = true;
-                    }
-                    continue;
-                } else {
-                    // Sig isn't optional, return false
-                    return false;
-                }
-            }
-            
-            ++argIndex;
-            
-        }
-        
-        return matches;
-        
-    }
-    
     function coverMethod(name, meth, args) {
-        
-        // Check all arguments passed to method for compliance
-        // against the corresponding signature.
         
         args = shaveArray(args);
         
@@ -317,6 +312,9 @@
             i = 0,
             sig,
             specialCheckResults = (function(){
+                
+                // Perform special checks for current level and
+                // all levels below current level.
                 
                 var lvl = lint.level + 1,
                     checks = [];
@@ -345,6 +343,8 @@
             sliced.push('...');
         }
         
+        // Check for calls like css().css().css()
+        // May as well use css({...})
         if (lint.level > 2 && args[1] && !isFunction(args[1]) && /^(css|attr)$/.test(name) || (name === 'bind' && version >= '1.4')) {
             
             if (this._lastMethodCalled === name) {
@@ -375,6 +375,8 @@
             
         }
         
+        // Check all arguments passed to method for compliance
+        // against the corresponding signature.
         while ((sig = sigs[i++])) {
             if ( complies(args, sig) ) {
                 signatureMatch = true;
@@ -442,16 +444,24 @@
         
     }
     
-    // "Cover" main jQuery function
+    // "Cover" init constructor
+    // Reports when no elements found, and when selector
+    // used more than once to no effect.
     _jQuery.fn.init = (function(_init){
         
         return function(s,c) {
             
             var ret = coverMethod.call(this, 'jQuery', function(){
-                    //internal = true;
-                    //var instance = new _init(s, c);
-                    //interal = false;
-                    return new _init(s, c);
+                
+                    // Set internal flag to avoid incorrect internal method
+                    // calls being reported by Lint.
+                
+                    internal = true;
+                    var instance = new _init(s, c);
+                    internal = false;
+                    
+                    return instance
+                
                 }, arguments),
                 _console = lint.console;
             
@@ -462,12 +472,14 @@
                 } else {
                     // Check for identical collection already in cache.
                     if ( selectorCache[s] && compare(selectorCache[s], ret) ) {
+                        
                         _console.warn(locale.repeatSelector);
                         _console.groupCollapsed(locale.info);
                             logEvent();
                             _console.log(locale.selector + '"' + s + '"');
                             _console.log(locale.selectorAdvice);
                         _console.groupEnd();
+                        
                     }
                 }
                 selectorCache[s] = ret;
@@ -479,11 +491,6 @@
         
     })(_jQuery.fn.init);
     
-    // Shall we copy over to the dollar sign too?
-    //if ( _jQuery === window.$ ) {
-        //window.$ = window[alias];
-    //}
-    
     // Cover all methods, except init
     for (var i in _jQuery.fn) {
         if (i === 'init' || !isFunction(_jQuery.fn[i])) {
@@ -492,10 +499,19 @@
         _jQuery.fn[i] = (function(meth, name){
             return function() {
                 return coverMethod.call(this, name, function(){
+                    
+                    // Set internal flag.
+                    // Any subsequent method calls before this
+                    // returns will be ignored. This is to stop
+                    // errors being reported from incorrect usage
+                    // of jQuery's API, internally.
+                    
                     internal = true;
                     var ret = meth.apply(this, arguments);
                     internal = false;
+                    
                     return ret;
+                
                 }, arguments);
             };
         })(_jQuery.fn[i], i);
@@ -523,6 +539,9 @@
     _jQuery.LINT = lint;
     
     _jQuery.event.add = (function(_add){
+        
+        // Each triggered event gets assigned to lastTriggeredEvent,
+        // Which is immediately nulled after a zero timeout.
         
         return function(elem, types, handler, data) {
             var _handler = handler;

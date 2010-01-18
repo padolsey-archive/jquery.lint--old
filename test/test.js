@@ -14,7 +14,8 @@ var console = jQuery.LINT.console = {
     log:function(a,b,c){
         //window.console.log.apply(null, arguments);  
     },
-    warn: function(a) {
+    warn: function(a, e) {
+        if (e instanceof Error) { return; }
         //window.console.warn.apply(null, arguments);
         ok(true);
     }
@@ -23,17 +24,17 @@ var console = jQuery.LINT.console = {
 test('jQuery()', function(){
     
     expect(3);
-    jQuery.LINT.level = 1;
+    $.LINT.level = 1;
     
-    if (jQuery.fn.jquery >= '1.4') jQuery();
-    jQuery('#k928372');
-    jQuery('.k928372');
+    if ($.fn.jquery >= '1.4') jQuery();
+    $('#k928372');
+    $('.k928372');
     
-    jQuery(1234);
-    jQuery(/a/);
+    $(1234);
+    $(/a/);
     
-    jQuery.LINT.level = 3;
-    jQuery('a');
+    $.LINT.level = 3;
+    $('a');
     
 });
 
@@ -41,11 +42,11 @@ test('css()', function(){
     
     expect(2);
     
-    jQuery('<a/>').css('color','red').css('padding', 20);
-    jQuery('<a/>').css('a','b','c','d');
+    $('<a/>').css('color','red').css('padding', 20);
+    $('<a/>').css('a','b','c','d');
     
-    jQuery('<a/>').css({});
-    jQuery('<a/>').css('background', '#FFF');
+    $('<a/>').css({});
+    $('<a/>').css('background', '#FFF');
     
 });
 
@@ -100,6 +101,47 @@ test('jQuery.get()/post()', function(){
     ];
     
     $.ajax = _ajax;
+    
+});
+
+test('each()', function(){
+    
+    expect(20);
+    
+    // Correct
+    $.each([], function(){});
+    $.each([], function(){}, []);
+    $.each({}, function(){});
+    $.each($, function(){});
+    $.each($.fn, function(){}, [1,2,3]);
+    $([1,2,3]).each(function(){});
+    $('<a/>').each(function(){});
+    $([document.createElement('div')]).each(function(){});
+    $({}).each(function(){});
+    $([]).each(function(){}, [1,2,3])
+    $($([])).each(function(){});
+    
+    // Incorrect
+    $.each(123);
+    $.each(1,2,3);
+    $.each('a','b','c');
+    $.each({}, {});
+    $.each([], []);
+    $.each([]);
+    $.each({});
+    $.each({}, function(){}, 123);
+    $.each(1,2,3,4,5,6);
+    $.each(function(){});
+    $([]).each(function(){}, [], 1,2,3,4,5);
+    $([]).each({});
+    $([]).each(1,2,3);
+    $([]).each();
+    $({}).each(123);
+    $({}).each(undefined, undefined);
+    $({}).each({}, []);
+    $({}).each([], {});
+    $({}).each([], function(){});
+    $({}).each(function(){}, function(){});
     
 });
 
