@@ -1,12 +1,14 @@
 /**
  * jQuery Lint
  * ---
- * VERSION 0.15
+ * VERSION 0.2
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
  * report any potentially erroneous activity the console.
  * ---
- * Idea from http://groups.google.com/group/jquery-dev/browse_thread/thread/9a15cca62ceb2444
+ * Idea from:
+ *      http://markmail.org/message/wzkosk2s5jklpkv4
+ *      http://groups.google.com/group/jquery-dev/browse_thread/thread/9a15cca62ceb2444
  * ---
  * @author James Padolsey
  * @contributors ...
@@ -295,9 +297,11 @@
                 throw new Error();
             } catch(e) {
                 if (e.stack) {
-                    lint.console.log(
-                        locale.location, (e.stack.split(/\n/g)[4].match(/@(.+?:\d+)/)||[,'NULL'])[1]
-                    );
+                    lint.console.groupCollapsed(locale.location);
+                    lint.console.log(e.stack.replace(
+                        /^.+?\n|.+?(jquery\.lint\.js|http:\/\/ajax\.googleapis\.com\/ajax\/libs).+?(\n|$)|.+?(?=@)/g, ''
+                    ));
+                    lint.console.groupEnd();
                 } else {
                     return null;
                 }
@@ -444,6 +448,7 @@
                             if (this instanceof _jQuery) {
                                 _console.log(locale.collection, sliced);
                             }
+                            logLocation();
                             _console.log(checkResult);
                         _console.groupEnd();
                     }
