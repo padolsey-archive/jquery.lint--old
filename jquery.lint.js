@@ -96,6 +96,11 @@
     api['jQuery.each'][0].arg[0].type += ', Array';
     api.triggerHandler[0].arg[1].optional = true;
     api.slice[0].arg[1] = {name:'end',type:'Integer',optional:true};
+    // Add elem arg to start of args for jQuery.queue
+    var jQQueue = api['jQuery.queue'];
+    jQQueue[0].arg.unshift({type:'Element', name:'elem'});
+    jQQueue[1].arg.unshift({type:'Element', name:'elem'});
+    jQQueue[2].arg.unshift({type:'Element', name:'elem'}); 
     
     
     var version = _jQuery.fn.jquery,
@@ -257,7 +262,7 @@
             if (!sig.arg[0] && (args.length > 1)) {
                 return false;
             }
-            ///console.info(sig.arg);
+            
             for (
                     var sigIndex = 0,
                         argIndex = 0,
@@ -272,7 +277,7 @@
                     // Too many args
                     return false;
                 }
-                ///console.log(typeCheck(sigArg.type, args[argIndex]), sigArg, args[argIndex]);
+                
                 matches = typeCheck(sigArg.type, args[argIndex]);
                 
                 if (!matches) {
