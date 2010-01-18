@@ -72,7 +72,8 @@
             special: specialChecks,
             lang: 'en',
             langs: langs,
-            console: _console
+            console: _console,
+            'throw': false
         },
         
         // Only cover certain fns under the jQ namespace
@@ -102,8 +103,18 @@
     var jQQueue = api['jQuery.queue'];
     jQQueue[0].arg.unshift({type:'Element', name:'elem'});
     jQQueue[1].arg.unshift({type:'Element', name:'elem'});
-    jQQueue[2].arg.unshift({type:'Element', name:'elem'}); 
-    
+    jQQueue[2].arg.unshift({type:'Element', name:'elem'});
+    api['jQuery.removeData'][0].arg.unshift({type:'Element', name:'elem'});
+    // one(), bind(), unbind():
+    api.one[1] = api.unbind[1] = api.bind[1];
+    // $().bind({}, {data});
+    api.one[1].arg[1] = api.bind[1].arg[1] = _jQuery.extend({}, api.one[0].arg[1], {type:'*'});
+    ////api.one[0].arg[1].type = api.bind[0].arg[1].type = '*';
+    // Make handler optional to unbind:
+    api.unbind[0].arg[1].optional = true;
+    api.unbind.push({added:'1.3'});
+    api.hover[1] = {added:'1.4',arg:[{name:'handlerInOut(eventObject)',type:'Function'}]};
+    api['jQuery.proxy'][0].arg[1].optional = true;
     
     var version = _jQuery.fn.jquery,
         map = _jQuery.map,
@@ -142,6 +153,8 @@
         toString = Object.prototype.toString,
         typeToString = function(o) {
             
+            if (!o) { return ""; }
+            
             if (typeof o === 'string') {
                 return '"' + o.replace(/"/g,'\\"') + '"';
             }
@@ -179,7 +192,7 @@
                 return o && (!!o.nodeName || o === window);
             },
             Elements: function(o) {
-                return this.jQuery(o) || this.Array(o);
+                return this.Element(o) || this.jQuery(o) || this.Array(o);
             },
             Array: function(o) {
                 // Just check that it's "array-like"
@@ -281,7 +294,7 @@
                 }
                 
                 matches = typeCheck(sigArg.type, args[argIndex]);
-                
+                ///console.log(args[argIndex], sigArg.type, matches)
                 if (!matches) {
                     if (sigArg.optional) {
                         if (args[argIndex] === undefined || args[argIndex] === null) {
@@ -318,17 +331,6 @@
             }
         },
         selectorCache = {},
-        lastTriggeredEvent = {},
-        logEvent = function() {
-            if (lastTriggeredEvent && lastTriggeredEvent.event) {
-                _console.groupCollapsed(locale.triggeredBy.replace(/%0/, lastTriggeredEvent.event.type));
-                    _console.log(locale.event, lastTriggeredEvent.event);
-                    _console.groupCollapsed(locale.handler);
-                        _console.log(lastTriggeredEvent.handler);
-                    _console.groupEnd();
-                _console.groupEnd();
-            }
-        },
         internal = false;
     
     function coverMethod(name, meth, args) {
@@ -360,8 +362,7 @@
             })(),
             signatureMatch = false,
             self = this,
-            sliced = slice(this, 0, 10),
-            withinEvent = lastTriggeredEvent ? lastTriggeredEvent.type : null;
+            sliced = slice(this, 0, 10);
         
         if (!sigs || !lint.level || internal) {
             return meth.apply(this, args);
@@ -373,15 +374,15 @@
         
         // Check for calls like css().css().css()
         // May as well use css({...})
-        if (lint.level > 2 && args[1] && !isFunction(args[1]) && /^(css|attr)$/.test(name) || (name === 'bind' && version >= '1.4')) {
+        if (lint.level > 2 && !types.Object(args[0]) && !isFunction(args[1]) && (/^(css|attr)$/.test(name) || (name === 'bind' && version >= '1.4'))) {
             
             if (this._lastMethodCalled === name) {
                 _console.warn(locale.methodTwice.replace(/%0/, name));
                 _console.groupCollapsed(locale.moreInfo);
-                    logEvent();
                     if (this instanceof _jQuery) {
                         _console.log(locale.collection, sliced);
                     }
+                    _console.log(args);
                     _console.log(
                         locale.combineCalls
                             .replace(/%0/, name)
@@ -419,7 +420,6 @@
                 // Args !== signature
                 _console.warn(locale.incorrectCall.replace(/%0/, name));
                 _console.groupCollapsed(locale.moreInfo);
-                    logEvent();
                     if (this instanceof _jQuery) {
                         _console.log(locale.collection, sliced);
                     }
@@ -466,10 +466,14 @@
             }
         } catch(e) { }
         
+        if (lint['throw']) {
+            return meth.apply(this, args);
+        }
         
         try {
             return meth.apply(this, args);
         } catch(e) {
+            
             try {
                 _console.warn(
                     locale.errorThrown.replace(/%0/, name), e
@@ -516,7 +520,6 @@
                             
                             _console.warn(locale.repeatSelector);
                             _console.groupCollapsed(locale.info);
-                                logEvent();
                                 logLocation();
                                 _console.log(locale.selector + '"' + s + '"');
                                 _console.log(locale.selectorAdvice);
@@ -549,9 +552,10 @@
                     // errors being reported from incorrect usage
                     // of jQuery's API, internally.
                     
+                    var wasInternal = internal;
                     internal = true;
                     var ret = meth.apply(this, arguments);
-                    internal = false;
+                    internal = wasInternal;
                     
                     return ret;
                 
@@ -580,25 +584,6 @@
     }
     
     _jQuery.LINT = lint;
-    
-    _jQuery.event.add = (function(_add){
-        
-        // Each triggered event gets assigned to lastTriggeredEvent,
-        // Which is immediately nulled after a zero timeout.
-        
-        return function(elem, types, handler, data) {
-            var _handler = handler;
-            handler = function(e) {
-                lastTriggeredEvent = {event: e, handler: _handler.toString()};
-                setTimeout(function(){
-                    lastTriggeredEvent = null
-                }, 0);
-                return _handler.apply(this, arguments);
-            };
-            return _add.call(this, elem, types, handler, data);
-        };
-        
-    })(_jQuery.event.add);
     
    
 })();
