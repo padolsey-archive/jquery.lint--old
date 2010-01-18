@@ -170,6 +170,9 @@
             Element: function(o) {
                 return o && (!!o.nodeName || o === window);
             },
+            Elements: function(o) {
+                return this.jQuery(o) || this.Array(o);
+            },
             Array: function(o) {
                 // Just check that it's "array-like"
                 return o && o.length !== undefined
@@ -180,7 +183,6 @@
             },
             Object: function(o) {
                 return toString.call(o) === '[object Object]';
-                //return isObject(o);
             },
             Function: function(o) {
                 return isFunction(o);
@@ -201,7 +203,7 @@
                 return this.Object(o);
             },
             Options: function(o) {
-                return isObject(o);
+                return this.Object(o);
             },
             'null': function(o) {
                 return o === null;

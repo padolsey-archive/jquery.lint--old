@@ -144,5 +144,19 @@ test('each()', function(){
     $({}).each(function(){}, function(){});
     
 });
+/*
+test('add()', function(){
+    
+    expect(jQuery.fn.jquery < '1.4' ? 4 : 3);
+    
+    var struct = $('<div><a/><a/></div>');
+    
+    $('<a/>').add($('<a/>'));
+    $('<a/>').add('a', struct); // should fail in <1.4
+    $('<a/>').add();
+    $('<a/>').add(/a/);
+    $('<a/>').add(undefined);
+    
+});*/
 
 })();
