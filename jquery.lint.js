@@ -109,12 +109,12 @@
     api.one[1] = api.unbind[1] = api.bind[1];
     // $().bind({}, {data});
     api.one[1].arg[1] = api.bind[1].arg[1] = _jQuery.extend({}, api.one[0].arg[1], {type:'*'});
-    ////api.one[0].arg[1].type = api.bind[0].arg[1].type = '*';
     // Make handler optional to unbind:
     api.unbind[0].arg[1].optional = true;
     api.unbind.push({added:'1.3'});
     api.hover[1] = {added:'1.4',arg:[{name:'handlerInOut(eventObject)',type:'Function'}]};
     api['jQuery.proxy'][0].arg[1].optional = true;
+    api.bind[0].arg[1].type = 'notFunction';
     
     var version = _jQuery.fn.jquery,
         map = _jQuery.map,
@@ -207,6 +207,9 @@
             },
             Function: function(o) {
                 return isFunction(o);
+            },
+            notFunction: function(o) {
+                return !this.Function(o);
             },
             Callback: function(o) {
                 return isFunction(o);
