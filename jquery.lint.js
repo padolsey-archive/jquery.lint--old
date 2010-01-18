@@ -4,10 +4,9 @@
  * VERSION 0.1
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
- * report any potentially erroneous activity via Firebug.
+ * report any potentially erroneous activity the console.
  * ---
- * Currently only supports usage via Firebug
- * Feel free to hack at _console functions though ;)
+ * Idea from http://groups.google.com/group/jquery-dev/browse_thread/thread/9a15cca62ceb2444
  * ---
  * @author James Padolsey
  * @contributors ...
