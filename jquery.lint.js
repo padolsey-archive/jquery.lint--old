@@ -1,7 +1,7 @@
 /**
  * jQuery Lint
  * ---
- * VERSION 0.22
+ * VERSION 0.3
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
  * report any potentially erroneous activity the console.
@@ -11,7 +11,7 @@
  *      http://groups.google.com/group/jquery-dev/browse_thread/thread/9a15cca62ceb2444
  * ---
  * @author James Padolsey
- * @contributors ...
+ * @contributors Paul Irish
  * ---
  * Dual licensed under the MIT and GPL licenses.
  *    - http://www.opensource.org/licenses/mit-license.php
@@ -54,17 +54,24 @@
                 collection: 'Collection:',
                 availableSigsInclude: 'Available signatures include: ',
                 errorThrown: 'When I called %0(...) with your args, an error was thrown!',
-                repeatSelector: 'You\'ve used the same selector more than once.',
+                repeatSelector: "You've used the same selector more than once.",
                 info: 'Info',
                 selector: 'Selector: ',
-                selectorAdvice: 'You should only use the same selector more than once when you know the returned collection will be different. For example, if you\'ve added more elements to the page that may comply with the selector',
+                selectorAdvice: "You should only use the same selector more than once when you know the returned collection will be different. For example, if you've added more elements to the page that may comply with the selector",
                 noElementsFound: 'No elements were found with the selector: "%0"',
                 combineCalls: 'Why not combine these calls by passing an object? E.g. \n%0(%1)',
-                methodTwice: 'You\'ve called %0(...) more than once on the same jQuery object',
+                methodTwice: "You've called %0(...) more than once on the same jQuery object",
                 triggeredBy: 'Triggered by %0 event',
                 event: 'Event:',
                 handler: 'Handler:',
-                location: 'Location:'
+                location: 'Location:',
+                invalidFilters: 'Selector: %0\nYou used invalid filters (aka Pseudo classes):\n%1',
+                badReadyCall: "Don't use jQuery().ready() - use jQuery(document).ready() instead. The former is likely to be deprecated in the future.",
+                browser: "Don't use jQuery.browser",
+                browserSafari: "Don't use jQuery.browser.safari - it's deprecated. If you have to use browser detection, then use jQuery.browser.webkit.",
+                featureDetection: 'The jQuery team recommends against using jQuery.browser, please try to use feature detection instead (see jQuery.support).',
+                boxModel: "Don't use jQuery.boxModel.",
+                boxModelDeprecated: 'Deprecated in jQuery 1.3 (see jQuery.support)'
             }
         },
         
@@ -78,7 +85,7 @@
         ],
         
         // Local scope jQuery
-        _jQuery = window[alias],
+        _jQuery = glob[alias],
         
         lint = {
             level: 3,
@@ -136,7 +143,7 @@
         locale = langs[lint.lang],
         undefined,
         slice = function(a,s,e) {
-            return Array.prototype.slice.call(a, s || 0, e || a.length);
+            return a.length ? Array.prototype.slice.call(a, s || 0, e || a.length) : [];
         },
         compare = function(a,b) {
             
@@ -513,11 +520,11 @@
                     if (checkResult && checkResult !== true) {
                         _console.warn(locale.specialCheckFailed.replace(/%0/, name));
                         _console.groupCollapsed(locale.moreInfo);
+                            _console.log(checkResult);
                             if (self instanceof _jQuery) {
                                 _console.log(locale.collection, sliced);
                             }
                             logLocation();
-                            _console.log(checkResult);
                         _console.groupEnd();
                     }
                 });
@@ -557,10 +564,17 @@
                 
                     // Set internal flag to avoid incorrect internal method
                     // calls being reported by Lint.
-                
+                    
+                    var wasInternal = internal;
                     internal = true;
-                    var instance = new _init(s, c);
-                    internal = false;
+                    try {
+                        var instance = new _init(s, c);
+                        extend(instance, this); // Add any flags (added before instantiation)
+                    } catch(e) {
+                        internal = wasInternal;j
+                        throw e;
+                    }
+                    internal = wasInternal;
                     
                     return instance
                 
@@ -618,6 +632,118 @@
     }
     
     _jQuery.LINT = lint;
+    
+    /////////////////////////
+    // Some special checks //
+    /////////////////////////
+    
+    specialChecks[2].jQuery = [
+        function(sel) {
+            
+            // Find invalid filters (e.g. :hover, :active etc.)
+            // suggested by Paul Irish
+            
+            if (typeof sel === 'string' && !/^[^<]*(<[\w\W]+>)[^>]*$/.test(sel)) {
+                
+                // It's a string, and NOT html - must be a selector
+                
+                var invalidFilters = [];
+                
+                sel.replace(/('|")(?:\\\1|[^\1])+?\1/g, '').replace(/:(\w+)/g, function(m, filter){
+                    if (!(filter in _jQuery.expr[':'])) {
+                        invalidFilters.push(m);
+                    }
+                });
+                
+                if (invalidFilters.length) {
+                    return locale.invalidFilters.replace(/%0/, sel).replace(/%1/, invalidFilters.join('\n'));
+                }
+                
+            }
+            
+        },
+        function() {
+            
+            // Set flag for ready() method, so we can check
+            // for $().ready() - which should be $(document).ready()
+            // suggested by Paul Irish
+            
+            if (!arguments.length) {
+                this._lint_noArgs = true;
+            }
+            
+        }
+    ];
+    
+    specialChecks[2].ready = [
+        function() {
+            // If _lint_noArgs is set then this object
+            // was instantiated with no args. I.e. $().ready()
+            if (this._lint_noArgs) {
+                return locale.badReadyCall;
+            }
+        }
+    ];
+    
+    if ('__defineGetter__' in ({})) {
+        
+        // Stop people from using $.browser, the deprecated
+        // $.browser.safari and $.boxModel.
+        // Suggest by Paul Irish
+        
+        var browser = _jQuery.browser,
+            safari = browser.safari;
+        
+        _jQuery.__defineGetter__('browser', function(){
+            
+            var _console = lint.console;
+            
+            if (lint.level >= 2) {
+                _console.warn(locale.browser);
+                _console.groupCollapsed(locale.moreInfo);
+                logLocation();
+                _console.log(locale.featureDetection);
+                _console.groupEnd();
+            }
+            
+            return browser;
+        });
+        
+        if (version >= '1.4') {
+            browser.__defineGetter__('safari', function(a){
+                
+                var _console = lint.console;
+                
+                if (lint.level >= 2) {
+                    _console.warn(locale.browserSafari);
+                    _console.groupCollapsed(locale.moreInfo);
+                    logLocation();
+                    _console.log(locale.featureDetection);
+                    _console.groupEnd();
+                }
+                
+                return safari;
+            });
+        }
+        
+        _jQuery.__defineGetter__('boxModel', function(){
+            
+            var _console = lint.console;
+            
+            if (lint.level >= 2) {
+                _console.warn(locale.boxModel);
+                _console.groupCollapsed(locale.moreInfo);
+                logLocation();
+                _console.log(locale.boxModelDeprecated);
+                _console.groupEnd();
+            }
+            
+            return _jQuery.support.boxModel;
+        });
+        
+        jQuery.__defineSetter__('boxModel', function(a){return a;});
+        
+    }
     
    
 })();
