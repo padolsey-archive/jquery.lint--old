@@ -351,6 +351,36 @@
         },
         selectorCache = {},
         internal = false;
+        
+    function register(name, methodAPI) {
+        
+        var obj = /^jQuery\./.test(name) ? _jQuery : _jQuery.fn,
+            methodName = name.replace(/^jQuery\./, '');
+            
+        obj[methodName] = (function(meth, name){
+            return function() {
+                return coverMethod.call(this, name, function(){
+                    var wasInternal = internal;
+                    internal = true;
+                    try {
+                        var ret = meth.apply(this, arguments);
+                    } catch(e) {
+                        internal = wasInternal;
+                        throw e;
+                    }
+                    internal = wasInternal;
+                    return ret;
+                }, arguments);
+            };
+        })(obj[methodName], name);
+        
+        if (methodAPI) {
+            api[name] = methodAPI;
+        }
+        
+    }
+    
+    lint.register = register;
     
     function coverMethod(name, meth, args) {
         
@@ -358,6 +388,7 @@
         
         var sigs = api[name],
             _console = lint.console,
+            self = this,
             i = 0,
             sig,
             specialCheckResults = (function(){
@@ -374,12 +405,12 @@
                         if (types.Array(check)) {
                             each(check, function(i, chk){
                                 checks.push(
-                                    chk.apply(this, args)
+                                    chk.apply(self, args)
                                 );
                             })
                         } else {
                             checks.push(
-                                check.apply(this, args)
+                                check.apply(self, args)
                             );
                         }
                     }
@@ -389,7 +420,6 @@
                 
             })(),
             signatureMatch = false,
-            self = this,
             sliced = slice(this, 0, 10);
         
         if (!sigs || !lint.level || internal) {
@@ -483,7 +513,7 @@
                     if (checkResult && checkResult !== true) {
                         _console.warn(locale.specialCheckFailed.replace(/%0/, name));
                         _console.groupCollapsed(locale.moreInfo);
-                            if (this instanceof _jQuery) {
+                            if (self instanceof _jQuery) {
                                 _console.log(locale.collection, sliced);
                             }
                             logLocation();
@@ -567,29 +597,13 @@
     
     // Cover all methods, except init
     for (var i in _jQuery.fn) {
+        
         if (i === 'init' || !isFunction(_jQuery.fn[i])) {
             continue;
         }
-        _jQuery.fn[i] = (function(meth, name){
-            return function() {
-                return coverMethod.call(this, name, function(){
-                    
-                    // Set internal flag.
-                    // Any subsequent method calls before this
-                    // returns will be ignored. This is to stop
-                    // errors being reported from incorrect usage
-                    // of jQuery's API, internally.
-                    
-                    var wasInternal = internal;
-                    internal = true;
-                    var ret = meth.apply(this, arguments);
-                    internal = wasInternal;
-                    
-                    return ret;
-                
-                }, arguments);
-            };
-        })(_jQuery.fn[i], i);
+        
+        register(i);
+        
     }
     
     // Cover some helper function under jQ namespace
@@ -599,22 +613,8 @@
             continue;
         }
         
-        _jQuery[i] = (function(meth, name){
-            return function() {
-                return coverMethod.call(this, 'jQuery.' + name, function(){
-                    var wasInternal = internal;
-                    internal = true;
-                    try {
-                        var ret = meth.apply(this, arguments);
-                    } catch(e) {
-                        internal = wasInternal;
-                        throw e;
-                    }
-                    internal = wasInternal;
-                    return ret;
-                }, arguments);
-            };
-        })(_jQuery[i], i);
+        register('jQuery.' + i);
+        
     }
     
     _jQuery.LINT = lint;
