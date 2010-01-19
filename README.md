@@ -23,70 +23,8 @@ Now, just use jQuery as you normally would. When you do something that jQuery Li
 ###Screenshot
 
 ![jquery.lint.js preview](http://img13.imageshack.us/img13/9527/lint.png)
-
-##What will lint report on?
-
-The reporting level can be set to anywhere between zero (everything off) to three (everything on), via `jQuery.LINT.level`. 
-
-###Level 0 reports:
-
- * Nothing.
-
-###Level 1 reports:
-
- * Incorrect argument signatures. The correct argument signatures are defined by the API -- jQuery Lint includes a skinny version of the API which it references to determine whether or not you're passing the correct arguments.
- * Errors thrown by calls to jQuery methods -- usually as a result of incorrect argument signatures.
- 
-###Level 2 reports:
-
- * Everything above.
- * Using the same selector twice, and the returned collection being the same both times. If you use the same selector more than once, and the returned collection is the same both times then you should probably be caching the first selection, instead of making subsequent identical selections.
- * Using selectors that don't return anything. jQuery operates fine with empty collections, but Lint will still bring up a warning if this happens.
- 
-###Level 3 reports:
-
- * Everything above.
- * Not taking advantage of combined property definitions, via `css({...})` or `attr({...})` or even `bind({...})` (in 1.4):
         
-        $('a').css('color','red').css('padding', 20);
-        
-   Lint would suggest that you use this instead:
-   
-        $('a').css({color:'red', padding: 20});
-        
-###Special checks
-
-You can define **your own special checks** via `jQuery.LINT.special`. For example, if you wanted to provide a new check on the main `jQuery` function, to occur on an error reporting level of `1`, this is how you'd define it:
-
-    jQuery.LINT.special[1].jQuery = function(selector, context) {
-        
-        if (selector === '*') {
-            return "Don't use the universal selector!";
-        }
-        
-        // Everything is fine... don't return anything (or return true)
-        
-    };
-    
-Other examples:
-
-    jQuery.LINT.special[3]['jQuery.extend'] = function(deep, o) {
-        if (!deep) {
-            for (var i in o) {
-                if ( jQuery.isPlainObject(o[i]) ) {
-                    return "You're calling .extend() without the deep flag, yet the passed object has child objects";
-                }
-            }
-        }
-    };
-    
-    jQuery.LINT.special[2].animate = function(o) {
-        if (jQuery.isEmptyObject(o)) {
-            return 'You called .animate() with NO properties!??';
-        }
-    };
-    
-**Currently, no "special checks" are included in the Lint script. I'm open to including a couple, so please message me with your suggestions.**
+**Read more about jQuery Lint in the [wiki](http://wiki.github.com/jamespadolsey/jQuery-Lint/)!**
  
 ###License
 

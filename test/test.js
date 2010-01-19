@@ -21,6 +21,16 @@ var console = jQuery.LINT.console = {
     }
 };
 
+jQuery.ajaxSetup({
+    xhr: function(){
+        return {
+            open: function(){},
+            send: function(){},
+            responseText: ''
+        }
+    }
+});
+
 test('jQuery()', function(){
     
     expect(3);
@@ -65,9 +75,6 @@ test('jQuery.get()/post()', function(){
     
     expect(10);
     
-    var _ajax = $.ajax;
-    $.ajax=function(){};
-    
     var xhrs = [
         
         // Incorrect
@@ -100,8 +107,6 @@ test('jQuery.get()/post()', function(){
     
     ];
     
-    $.ajax = _ajax;
-    
 });
 
 test('each()', function(){
@@ -112,7 +117,6 @@ test('each()', function(){
     $.each([], function(){});
     $.each([], function(){}, []);
     $.each({}, function(){});
-    $.each($, function(){});
     $.each($.fn, function(){}, [1,2,3]);
     $([1,2,3]).each(function(){});
     $('<a/>').each(function(){});
@@ -155,6 +159,16 @@ test('add()', function(){
     $('<a/>').add('a', struct[0]); // should fail in <1.4
     $('<a/>').add();
     $('<a/>').add(undefined);
+    
+});
+
+test('jQuery.ajax()', function(){
+    
+    expect(2);
+    
+    $.ajax({});
+    $.ajax();
+    $.ajax('a');
     
 });
 

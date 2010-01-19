@@ -366,13 +366,22 @@
                 // all levels below current level.
                 
                 var lvl = lint.level + 1,
-                    checks = [];
+                    checks = [],
+                    check;
                     
                 while (lvl--) {
-                    if (specialChecks[lvl] && specialChecks[lvl][name]) {
-                        checks.push(
-                            specialChecks[lvl][name].apply(this, args)
-                        )
+                    if (specialChecks[lvl] && (check = specialChecks[lvl][name])) {
+                        if (types.Array(check)) {
+                            each(check, function(i, chk){
+                                checks.push(
+                                    chk.apply(this, args)
+                                );
+                            })
+                        } else {
+                            checks.push(
+                                check.apply(this, args)
+                            );
+                        }
                     }
                 }
                 
@@ -593,9 +602,15 @@
         _jQuery[i] = (function(meth, name){
             return function() {
                 return coverMethod.call(this, 'jQuery.' + name, function(){
+                    var wasInternal = internal;
                     internal = true;
-                    var ret = meth.apply(this, arguments);
-                    internal = false;
+                    try {
+                        var ret = meth.apply(this, arguments);
+                    } catch(e) {
+                        internal = wasInternal;
+                        throw e;
+                    }
+                    internal = wasInternal;
                     return ret;
                 }, arguments);
             };
