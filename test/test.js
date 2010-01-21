@@ -172,4 +172,79 @@ test('jQuery.ajax()', function(){
     
 });
 
+test('DOM traversing methods', function(){
+    
+    expect(jQuery.fn.jquery >= '1.4' ? 27 : 24);
+    
+    var struct = jQuery('<div><a/><span/><a/><ul><li/></ul></div>')[0],
+        $ = function(s) {
+            return jQuery(s, struct);
+        },
+        ul = $('ul'),
+        a = $('a'),
+        li = $('li'),
+        all = $('*');
+    
+    // Correct
+    a.next('div,span');
+    a.next();
+    a.parents('div');
+    a.parents();
+    a.parent();
+    a.closest('div');
+    ul.find('li');
+    ul.prevAll('a');
+    ul.prev();
+    ul.prev('a');
+    ul.prevAll();
+    ul.children();
+    ul.children('li');
+    ul.find('li').andSelf();
+    ul.find('li').end();
+    ul.filter(function(){return true});
+    ul.filter('ul');
+    if (jQuery.fn.jquery >= '1.4') {
+        li.closest('ul', struct);
+        a.parentsUntil('x');
+        a.nextUntil('y');
+        a.prevUntil('z');
+    }
+    ul.siblings();
+    ul.siblings('a');
+    all.slice(1,-1);
+    
+    // Incorrect
+    a.next(/a/, {});
+    a.next(1,2,3);
+    a.parents(false);
+    a.parents(function(){});
+    a.parent('p',1,2,34);
+    a.closest();
+    li.closest('x', struct, {});
+    ul.find('___', '+');
+    ul.prevAll({});
+    ul.prev(function(){}, {});
+    ul.prev([]);
+    ul.prevAll([], {}, [], 1);
+    ul.children(1);
+    ul.children(all);
+    ul.find('j').andSelf({});
+    ul.find();
+    ul.find('m').end(1);
+    ul.filter({});
+    ul.filter();
+    ul.filter(1);
+    if (jQuery.fn.jquery >= '1.4') {
+        a.parentsUntil(1,2, {});
+        a.nextUntil(1,2, {});
+        a.prevUntil(1,2, {});
+    }
+    ul.siblings(1);
+    ul.siblings(function(){});
+    all.slice(1,2,3);
+    all.slice({});
+    all.slice();
+    
+});
+
 })();
