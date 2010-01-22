@@ -1,7 +1,7 @@
 /**
  * jQuery Lint
  * ---
- * VERSION 0.3
+ * VERSION 0.31
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
  * report any potentially erroneous activity the console.
@@ -140,6 +140,7 @@
         map = _jQuery.map,
         each = _jQuery.each,
         extend = _jQuery.extend,
+        find = _jQuery.find,
         locale = langs[lint.lang],
         undefined,
         slice = function(a,s,e) {
@@ -518,14 +519,18 @@
             if (specialCheckResults.length) {
                 each(specialCheckResults, function(i, checkResult){
                     if (checkResult && checkResult !== true) {
-                        _console.warn(locale.specialCheckFailed.replace(/%0/, name));
-                        _console.groupCollapsed(locale.moreInfo);
-                            _console.log(checkResult);
-                            if (self instanceof _jQuery) {
-                                _console.log(locale.collection, sliced);
-                            }
-                            logLocation();
-                        _console.groupEnd();
+                        if (types.Function(checkResult)) {
+                            checkResult(_console);
+                        } else {
+                            _console.warn(locale.specialCheckFailed.replace(/%0/, name));
+                            _console.groupCollapsed(locale.moreInfo);
+                                _console.log(checkResult);
+                                if (self instanceof _jQuery) {
+                                    _console.log(locale.collection, sliced);
+                                }
+                                logLocation();
+                            _console.groupEnd();
+                        }
                     }
                 });
             }
@@ -558,7 +563,7 @@
     // used more than once to no effect.
     _jQuery.fn.init = (function(_init){
         
-        return function(s,c) {
+        return function(selector, context) {
             
             var ret = coverMethod.call(this, 'jQuery', function(){
                 
@@ -568,10 +573,10 @@
                     var wasInternal = internal;
                     internal = true;
                     try {
-                        var instance = new _init(s, c);
+                        var instance = new _init(selector, context);
                         extend(instance, this); // Add any flags (added before instantiation)
                     } catch(e) {
-                        internal = wasInternal;j
+                        internal = wasInternal;
                         throw e;
                     }
                     internal = wasInternal;
@@ -581,14 +586,23 @@
                 }, arguments),
                 _console = lint.console;
                 
+            // Deal with situations where no elements are returned
+            // and for the same selector being used more than once
+            // to no effect
+                
             try{
-                if (typeof s === 'string' && lint.level > 1) {
+                
+                if (typeof selector === 'string' && lint.level > 1) {
+                    
                     if (!ret[0]) {
+                        
                         // No elements returned
-                        _console.warn(locale.noElementsFound.replace(/%0/, s));
+                        _console.warn(locale.noElementsFound.replace(/%0/, selector));
+                    
                     } else {
+                        
                         // Check for identical collection already in cache.
-                        if ( selectorCache[s] && compare(selectorCache[s], ret) ) {
+                        if ( selectorCache[selector] && compare(selectorCache[selector], ret) ) {
                             
                             _console.warn(locale.repeatSelector);
                             _console.groupCollapsed(locale.info);
@@ -598,9 +612,13 @@
                             _console.groupEnd();
                             
                         }
+                        
                     }
-                    selectorCache[s] = ret;
+                    
+                    selectorCache[selector] = ret;
+                    
                 }
+                
             } catch(e) { }
             
             return ret;
@@ -638,25 +656,25 @@
     /////////////////////////
     
     specialChecks[2].jQuery = [
-        function(sel) {
+        function(selector) {
             
             // Find invalid filters (e.g. :hover, :active etc.)
             // suggested by Paul Irish
             
-            if (typeof sel === 'string' && !/^[^<]*(<[\w\W]+>)[^>]*$/.test(sel)) {
+            if (typeof selector === 'string' && !/^[^<]*(<[\w\W]+>)[^>]*$/.test(selector)) {
                 
                 // It's a string, and NOT html - must be a selector
                 
                 var invalidFilters = [];
                 
-                sel.replace(/('|")(?:\\\1|[^\1])+?\1/g, '').replace(/:(\w+)/g, function(m, filter){
+                selector.replace(/('|")(?:\\\1|[^\1])+?\1/g, '').replace(/:(\w+)/g, function(m, filter){
                     if (!(filter in _jQuery.expr[':'])) {
                         invalidFilters.push(m);
                     }
                 });
                 
                 if (invalidFilters.length) {
-                    return locale.invalidFilters.replace(/%0/, sel).replace(/%1/, invalidFilters.join('\n'));
+                    return locale.invalidFilters.replace(/%0/, selector).replace(/%1/, invalidFilters.join('\n'));
                 }
                 
             }
@@ -689,7 +707,7 @@
         
         // Stop people from using $.browser, the deprecated
         // $.browser.safari and $.boxModel.
-        // Suggest by Paul Irish
+        // Suggested by Paul Irish
         
         var browser = _jQuery.browser,
             safari = browser.safari;

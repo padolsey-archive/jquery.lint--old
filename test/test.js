@@ -1,7 +1,7 @@
 
 (function(){
 
-var console = jQuery.LINT.console = {
+jQuery.LINT.console = {
     group:function(a,b,c){
         //window.console.group.apply(null, arguments);  
     },
