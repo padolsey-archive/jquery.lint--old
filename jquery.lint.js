@@ -1,7 +1,7 @@
 /**
  * jQuery Lint
  * ---
- * VERSION 0.31
+ * VERSION 0.32
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
  * report any potentially erroneous activity the console.
@@ -29,19 +29,19 @@
         _console = {
             
             warn: glob.console && console.warn ?
-                function(){return console.warn.apply(console, arguments);} : function(){},
+                function(){console.warn.apply(console, arguments);} : function(){},
                 
             group: glob.console && console.group ?
-                function(){return console.group.apply(console, arguments);} : function(){},
+                function(){console.group.apply(console, arguments);} : function(){},
                 
             groupEnd: glob.console && console.groupEnd ?
-                function(){return console.groupEnd.apply(console, arguments);} : function(){},
+                function(){console.groupEnd();} : function(){},
                 
             groupCollapsed: glob.console && console.groupCollapsed ?
-                function(){return console.groupCollapsed.apply(console, arguments);} : function(){},
+                function(){console.groupCollapsed.apply(console, arguments);} : function(){},
                 
             log: glob.console && console.log ?
-                function(){return console.log.apply(console, arguments);} : function(){}
+                function(){console.log.apply(console, arguments);} : function(){}
                 
         },
         
@@ -93,7 +93,14 @@
             lang: 'en',
             langs: langs,
             console: _console,
-            'throw': false
+            'throw': false,
+            specific: {
+                // True to report, false to supress
+                noElementsFound: true,
+                repeatSelector: true,
+                browserSniffing: true,
+                invalidFilters: true
+            }
         },
         
         // Only cover certain fns under the jQ namespace
@@ -348,12 +355,16 @@
             } catch(e) {
                 if (e.stack) {
                     lint.console.groupCollapsed(locale.location);
-                    lint.console.log(e.stack.replace(
-                        /^.+?\n|.+?(jquery\.lint\.js|http:\/\/ajax\.googleapis\.com\/ajax\/libs).+?(\n|$)|.+?(?=@)/g, ''
-                    ));
+                    lint.console.log(
+                        e.stack
+                            // Remove everything before the file name and line number
+                            // plus, get rid of errors from jQuery.lint.js & any libs
+                            // from google's CDN
+                            .replace(/^.+?\n|.+?(jquery\.lint\.js|http:\/\/ajax\.googleapis\.com).+?(\n|$)|.+?(?=@)/g, '')
+                            // Remove duplicates
+                            .replace(/(.+?)\n(?=[\s\S]*?\1(?:\n|$))/g, '')
+                    );
                     lint.console.groupEnd();
-                } else {
-                    return null;
                 }
             }
         },
@@ -594,22 +605,26 @@
                 
                 if (typeof selector === 'string' && lint.level > 1) {
                     
-                    if (!ret[0]) {
+                    if (lint.specific.noElementsFound && !ret[0]) {
                         
                         // No elements returned
                         _console.warn(locale.noElementsFound.replace(/%0/, selector));
                     
                     } else {
                         
-                        // Check for identical collection already in cache.
-                        if ( selectorCache[selector] && compare(selectorCache[selector], ret) ) {
+                        if (lint.specific.repeatSelector) {
                             
-                            _console.warn(locale.repeatSelector);
-                            _console.groupCollapsed(locale.info);
-                                logLocation();
-                                _console.log(locale.selector + '"' + s + '"');
-                                _console.log(locale.selectorAdvice);
-                            _console.groupEnd();
+                            // Check for identical collection already in cache.
+                            if ( selectorCache[selector] && compare(selectorCache[selector], ret) ) {
+                                
+                                _console.warn(locale.repeatSelector);
+                                _console.groupCollapsed(locale.info);
+                                    logLocation();
+                                    _console.log(locale.selector + '"' + selector + '"');
+                                    _console.log(locale.selectorAdvice);
+                                _console.groupEnd();
+                                
+                            }
                             
                         }
                         
@@ -661,7 +676,7 @@
             // Find invalid filters (e.g. :hover, :active etc.)
             // suggested by Paul Irish
             
-            if (typeof selector === 'string' && !/^[^<]*(<[\w\W]+>)[^>]*$/.test(selector)) {
+            if (lint.specific.invalidFilters && typeof selector === 'string' && !/^[^<]*(<[\w\W]+>)[^>]*$/.test(selector)) {
                 
                 // It's a string, and NOT html - must be a selector
                 
@@ -716,12 +731,16 @@
             
             var _console = lint.console;
             
-            if (lint.level >= 2) {
-                _console.warn(locale.browser);
-                _console.groupCollapsed(locale.moreInfo);
-                logLocation();
-                _console.log(locale.featureDetection);
-                _console.groupEnd();
+            if (lint.specific.browserSniffing) {
+                
+                if (lint.level >= 2) {
+                    _console.warn(locale.browser);
+                    _console.groupCollapsed(locale.moreInfo);
+                    logLocation();
+                    _console.log(locale.featureDetection);
+                    _console.groupEnd();
+                }
+                
             }
             
             return browser;
