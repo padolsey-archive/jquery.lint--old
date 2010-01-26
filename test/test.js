@@ -248,3 +248,30 @@ test('DOM traversing methods', function(){
 });
 
 })();
+
+test('New plugin', function(){
+    
+    expect(4);
+    
+    jQuery.fn.foo = function(n){ return n + 2; };
+    var x = jQuery.fn.foo.x = {};
+    
+    jQuery.LINT.register('foo', [
+        {
+            arg: [
+                { name: 'firstArg', type: 'number' }
+            ]
+        }
+    ]);
+    
+    ok(jQuery.fn.foo(1) === 3, 'Calling plugin');
+    ok(jQuery.fn.foo.x === x, 'Properties copied over');
+    
+    // correct
+    jQuery.fn.foo(144);
+    
+    // incorrect
+    jQuery.fn.foo({});
+    jQuery.fn.foo(1,2,3,4);
+    
+});

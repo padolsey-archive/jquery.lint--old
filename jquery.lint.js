@@ -1,7 +1,7 @@
 /**
  * jQuery Lint
  * ---
- * VERSION 0.32
+ * VERSION 0.33
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
  * report any potentially erroneous activity the console.
@@ -211,56 +211,53 @@
                 return true;
             },
             selector: function(o) {
-                return this.String(o);
+                return this.string(o);
             },
-            Selector: function(o) {
-                return this.selector(o);
-            },
-            Element: function(o) {
+            element: function(o) {
                 return o && (!!o.nodeName || o === window);
             },
-            Elements: function(o) {
-                return this.Element(o) || this.jQuery(o) || this.Array(o);
+            elements: function(o) {
+                return this.element(o) || this.jquery(o) || this.array(o);
             },
-            Array: function(o) {
+            array: function(o) {
                 // Just check that it's "array-like"
                 return o && o.length !== undefined
                         && typeof o !== 'string' && !isFunction(o);
             },
-            jQuery: function(o) {
+            jquery: function(o) {
                 return o instanceof _jQuery;
             },
-            Object: function(o) {
+            object: function(o) {
                 return toString.call(o) === '[object Object]';
             },
-            Function: function(o) {
+            'function': function(o) {
                 return isFunction(o);
             },
-            notFunction: function(o) {
-                return !this.Function(o);
+            notfunction: function(o) {
+                return !this['function'](o);
             },
-            Callback: function(o) {
+            callback: function(o) {
                 return isFunction(o);
             },
-            String: function(o) {
+            string: function(o) {
                 return typeof o === 'string';
             },
-            Number: function(o) {
+            number: function(o) {
                 return typeof o === 'number' && !isNaN(o);
             },
-            Integer: function(o) {
-                return this.Number(o) && ~~o === o;
+            integer: function(o) {
+                return this.number(o) && ~~o === o;
             },
-            Map: function(o) {
-                return this.Object(o);
+            map: function(o) {
+                return this.object(o);
             },
-            Options: function(o) {
-                return this.Object(o);
+            options: function(o) {
+                return this.object(o);
             },
             'null': function(o) {
                 return o === null;
             },
-            Boolean: function(o) {
+            'boolean': function(o) {
                 return typeof o === 'boolean';
             }
         },
@@ -269,24 +266,23 @@
             // Check that argument is of the right type
             // The types are specified within the API data
             
-            if ( types[type] ) {
-                return arg !== undefined && types[type](arg);
-            }
-            
-            if ( type.indexOf(',') ) {
+            var split = type.split(/,\s?/g),
+                i = split.length,
+                cur;
                 
-                var split = type.split(/,\s?/g),
-                    i = split.length;
-                    
-                while (i--) {
-                    if (types[split[i]] && types[split[i]](arg)) {
-                        return true;
-                    }
-                }
-                
+            if (arg === undefined) {
                 return false;
             }
             
+            while (i--) {
+                cur = split[i];
+                if ((types[cur] && types[cur](arg))
+                    // Try lowercase too
+                    || (types[cur = cur.toLowerCase()] && types[cur](arg))) {
+                    return true;
+                }
+            }
+                
             return false;
                 
         },
@@ -377,7 +373,7 @@
             methodName = name.replace(/^jQuery\./, '');
             
         obj[methodName] = (function(meth, name){
-            return function() {
+            return extend(function() {
                 return coverMethod.call(this, name, function(){
                     var wasInternal = internal;
                     internal = true;
@@ -390,7 +386,7 @@
                     internal = wasInternal;
                     return ret;
                 }, arguments);
-            };
+            }, meth);
         })(obj[methodName], name);
         
         if (methodAPI) {
@@ -421,7 +417,7 @@
                     
                 while (lvl--) {
                     if (specialChecks[lvl] && (check = specialChecks[lvl][name])) {
-                        if (types.Array(check)) {
+                        if (types.array(check)) {
                             each(check, function(i, chk){
                                 checks.push(
                                     chk.apply(self, args)
@@ -451,7 +447,7 @@
         
         // Check for calls like css().css().css()
         // May as well use css({...})
-        if (lint.level > 2 && !types.Object(args[0]) && !isFunction(args[1]) && (/^(css|attr)$/.test(name) || (name === 'bind' && version >= '1.4'))) {
+        if (lint.level > 2 && !types.object(args[0]) && !isFunction(args[1]) && (/^(css|attr)$/.test(name) || (name === 'bind' && version >= '1.4'))) {
             
             if (this._lastMethodCalled === name) {
                 _console.warn(locale.methodTwice.replace(/%0/, name));
@@ -530,7 +526,7 @@
             if (specialCheckResults.length) {
                 each(specialCheckResults, function(i, checkResult){
                     if (checkResult && checkResult !== true) {
-                        if (types.Function(checkResult)) {
+                        if (isFunction(checkResult)) {
                             checkResult(_console);
                         } else {
                             _console.warn(locale.specialCheckFailed.replace(/%0/, name));
