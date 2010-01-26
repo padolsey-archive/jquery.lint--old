@@ -1,7 +1,7 @@
 /**
  * jQuery Lint
  * ---
- * VERSION 0.33
+ * VERSION 0.33.1
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
  * report any potentially erroneous activity the console.
@@ -358,7 +358,7 @@
                             // from google's CDN
                             .replace(/^.+?\n|.+?(jquery\.lint\.js|http:\/\/ajax\.googleapis\.com).+?(\n|$)|.+?(?=@)/g, '')
                             // Remove duplicates
-                            .replace(/(.+?)\n(?=[\s\S]*?\1(?:\n|$))/g, '')
+                            .replace(/(^|\n)(.+?)\n(?=\2(?:\n|$)|[\s\S]+?\n\2(?:\n|$))/g, '$1')
                     );
                     lint.console.groupEnd();
                 }
@@ -679,7 +679,7 @@
                 var invalidFilters = [];
                 
                 selector.replace(/('|")(?:\\\1|[^\1])+?\1/g, '').replace(/:(\w+)/g, function(m, filter){
-                    if (!(filter in _jQuery.expr[':'])) {
+                    if (!/^(contains|not)$/.test(filter) && !((filter in _jQuery.expr[':']) || (filter in _jQuery.expr.setFilters))) {
                         invalidFilters.push(m);
                     }
                 });

@@ -15,9 +15,9 @@ jQuery.LINT.console = {
         //window.console.log.apply(null, arguments);  
     },
     warn: function(a, e) {
-        if (e instanceof Error) { return; }
+        if ((e instanceof Error) || /syntax error/i.test(e)) { return; }
         //window.console.warn.apply(null, arguments);
-        ok(true);
+        ok(true, a);
     }
 };
 
@@ -68,6 +68,26 @@ test('selectors', function(){
     
     $('a', struct);
     $('a', struct);
+    
+});
+
+test('pseudo', function(){
+    
+    expect(3);
+    
+    jQuery.LINT.specific.noElementsFound = false;
+    
+    // valid
+    $('div:not(.foo:last):first');
+    $(':first');
+    $('div:contains(a) :input');
+    
+    // invalid
+    $('div:foobar');
+    $(':ttt:yyy');
+    $('div:not(.foo:abcdefg):first');
+    
+    jQuery.LINT.specific.noElementsFound = true;
     
 });
 
