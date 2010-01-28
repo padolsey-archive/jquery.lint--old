@@ -1,7 +1,7 @@
 /**
  * jQuery Lint
  * ---
- * VERSION 0.33.1
+ * VERSION 0.33.2
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
  * report any potentially erroneous activity the console.
@@ -121,6 +121,7 @@
     api.each[0].arg[1] = api['jQuery.each'][0].arg[2] = {name:'args', type:'Array', optional:true};
     api['jQuery.data'][0].arg[2].type = '*';
     api.attr[1].arg[1].type = '*';
+    api.data[0].arg[1].type = '*';
     api['jQuery.each'][0].arg[0].type += ', Array';
     // extraParam to trigger & triggerHandler IS optional
     api.trigger[0].arg[1].optional = true;
