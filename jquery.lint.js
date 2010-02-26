@@ -1,7 +1,7 @@
 /**
  * jQuery Lint
  * ---
- * VERSION 0.33.2
+ * VERSION 0.34
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
  * report any potentially erroneous activity the console.
@@ -88,6 +88,7 @@
         _jQuery = glob[alias],
         
         lint = {
+            version: '0.34',
             level: 3,
             special: specialChecks,
             lang: 'en',
