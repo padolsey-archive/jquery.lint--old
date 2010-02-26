@@ -1,7 +1,7 @@
 /**
  * jQuery Lint
  * ---
- * VERSION 0.34
+ * VERSION 0.35
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
  * report any potentially erroneous activity the console.
@@ -715,70 +715,5 @@
             }
         }
     ];
-    
-    if ('__defineGetter__' in ({})) {
-        
-        // Stop people from using $.browser, the deprecated
-        // $.browser.safari and $.boxModel.
-        // Suggested by Paul Irish
-        
-        var browser = _jQuery.browser,
-            safari = browser.safari;
-        
-        _jQuery.__defineGetter__('browser', function(){
-            
-            var _console = lint.console;
-            
-            if (lint.specific.browserSniffing) {
-                
-                if (lint.level >= 2) {
-                    _console.warn(locale.browser);
-                    _console.groupCollapsed(locale.moreInfo);
-                    logLocation();
-                    _console.log(locale.featureDetection);
-                    _console.groupEnd();
-                }
-                
-            }
-            
-            return browser;
-        });
-        
-        if (version >= '1.4') {
-            browser.__defineGetter__('safari', function(a){
-                
-                var _console = lint.console;
-                
-                if (lint.level >= 2) {
-                    _console.warn(locale.browserSafari);
-                    _console.groupCollapsed(locale.moreInfo);
-                    logLocation();
-                    _console.log(locale.featureDetection);
-                    _console.groupEnd();
-                }
-                
-                return safari;
-            });
-        }
-        
-        _jQuery.__defineGetter__('boxModel', function(){
-            
-            var _console = lint.console;
-            
-            if (lint.level >= 2) {
-                _console.warn(locale.boxModel);
-                _console.groupCollapsed(locale.moreInfo);
-                logLocation();
-                _console.log(locale.boxModelDeprecated);
-                _console.groupEnd();
-            }
-            
-            return _jQuery.support.boxModel;
-        });
-        
-        jQuery.__defineSetter__('boxModel', function(a){return a;});
-        
-    }
-    
    
 })();

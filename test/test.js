@@ -267,8 +267,6 @@ test('DOM traversing methods', function(){
     
 });
 
-})();
-
 test('New plugin', function(){
     
     expect(4);
@@ -295,3 +293,5 @@ test('New plugin', function(){
     jQuery.fn.foo(1,2,3,4);
     
 });
+
+})();
