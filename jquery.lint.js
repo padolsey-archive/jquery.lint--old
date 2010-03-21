@@ -144,6 +144,9 @@
     api.hover[1] = {added:'1.4',arg:[{name:'handlerInOut(eventObject)',type:'Function'}]};
     api['jQuery.proxy'][0].arg[1].optional = true;
     api.bind[0].arg[1].type = 'notFunction';
+    // Make append('a','b','c') (and prepend) possible:
+    api.append[0].arg[0].multiple = true;
+    api.prepend[0].arg[0].multiple = true;
     
     var version = _jQuery.fn.jquery,
         map = _jQuery.map,
@@ -295,7 +298,8 @@
             
             var matches = false,
                 sigArg,
-                argLength = args.length;
+                argLength = args.length,
+                nextIsOptional = false;
             
             if (version < sig.added) {
                 // Too new
@@ -326,7 +330,7 @@
                 }
                 
                 matches = typeCheck(sigArg.type, args[argIndex]);
-                ///console.log(args[argIndex], sigArg.type, matches)
+                
                 if (!matches) {
                     if (sigArg.optional) {
                         if (args[argIndex] === undefined || args[argIndex] === null) {
@@ -337,6 +341,16 @@
                     } else {
                         // Sig isn't optional, return false
                         return false;
+                    }
+                }
+                
+                if (sigArg.multiple) {
+                    // If it's multiple, then carry on with the same
+                    // signature, but check that there are remaining
+                    // arguments
+                    --sigIndex;
+                    if (argIndex + 1 >= argLength) {
+                        break;
                     }
                 }
                 
@@ -510,8 +524,8 @@
                                 name + '(' +
                                 (sigArgs ?
                                      sigArgs[0] ?
-                                        map(sigArgs, function(sig){
-                                            return sig ? sig.optional ? '[' + sig.name + ']' : sig.name : [];
+                                        map(sigArgs, function(sig, i){
+                                            return sig ? sig.optional ? '[' + sig.name + ']' : sig.multiple ? sig.name + ',[...]' : sig.name : [];
                                         }).join(', ') :
                                         sigArgs.name
                                 : '') + ')'

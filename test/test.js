@@ -294,4 +294,37 @@ test('New plugin', function(){
     
 });
 
+test('append/prepend', function(){
+    
+    expect(10);
+    
+    var d = jQuery('<div/>');
+    
+    // Correct
+    d.append('a');
+    d.append(d.clone()[0]);
+    d.append(d.clone());
+    d.append('a', d.clone(), d.clone()[0], 'b');
+    d.append('a','b','c');
+    d.prepend('a');
+    d.prepend(d.clone()[0]);
+    d.prepend(d.clone());
+    d.prepend('a', d.clone(), d.clone()[0], 'b');
+    d.prepend('a','b','c');
+    
+    // Incorrect
+    d.append('a','c',[]);
+    d.append(88);
+    d.append({});
+    d.append(d.clone(), undefined, 45);
+    d.append();
+    d.prepend('a','c',[]);
+    d.prepend(88);
+    d.prepend({});
+    d.prepend(d.clone(), undefined, 45);
+    d.prepend();
+    
+    
+});
+
 })();
