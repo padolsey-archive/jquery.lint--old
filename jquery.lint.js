@@ -88,7 +88,7 @@
         _jQuery = glob[alias],
         
         lint = {
-            version: '0.34',
+            version: '0.36',
             level: 3,
             special: specialChecks,
             lang: 'en',
