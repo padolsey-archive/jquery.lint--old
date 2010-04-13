@@ -11,7 +11,7 @@
  *      http://groups.google.com/group/jquery-dev/browse_thread/thread/9a15cca62ceb2444
  * ---
  * @author James Padolsey
- * @contributors Paul Irish
+ * @contributors Paul Irish, Zoran Zaric
  * ---
  * Dual licensed under the MIT and GPL licenses.
  *    - http://www.opensource.org/licenses/mit-license.php
