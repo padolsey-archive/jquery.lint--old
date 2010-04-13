@@ -72,6 +72,34 @@
                 featureDetection: 'The jQuery team recommends against using jQuery.browser, please try to use feature detection instead (see jQuery.support).',
                 boxModel: "Don't use jQuery.boxModel.",
                 boxModelDeprecated: 'Deprecated in jQuery 1.3 (see jQuery.support)'
+            },
+
+            de: {
+                incorrectCall: '%0(...) falsch aufgerufen',
+                specialCheckFailed: '%0(...) Spezial-Check fehlgeschlagen',
+                moreInfo: 'Mehr Informationen:',
+                youPassed: 'Du hast übergeben: ',
+                collection: 'Sammlung:',
+                availableSigsInclude: 'Verfügbare Signaturen enthalten: ',
+                errorThrown: 'Als ich %0(...) mit deinen Argumenten aufgerufen habe, wurde ein Fehler geworfen!',
+                repeatSelector: "Du hast den selben Selektor mehrmals verwendet.",
+                info: 'Info',
+                selector: 'Selektor: ',
+                selectorAdvice: "Du solltest den selben Selektor nur dann verwenden, wenn du weißt dass sich das Ergebnis ändert. Zum Beispiel, wenn du Elemente zu einer Seite hinzufügst, die den Selektor erfüllen",
+                noElementsFound: 'Keine Elemente gefunden für den Selektor: "%0"',
+                combineCalls: 'Warum kombinierst du diese Aufrufen nicht, indem du ein Objekt übergibst? z.B. \n%0(%1)',
+                methodTwice: "Du hast %0(...) mehr als ein mal auf dem selben jQuery-Objekt aufgerufen",
+                triggeredBy: 'Vom %0-Event getriggert',
+                event: 'Event:',
+                handler: 'Handler:',
+                location: 'Location:',
+                invalidFilters: 'Selektor: %0\nDu hast fehlerhafte Filter verwendet (aka Pseudo Klassen):\n%1',
+                badReadyCall: "Verwende jQuery().ready() nicht - verwende stattdessen jQuery(document).ready(). Ersteres wird wahrscheinlich in der Zukunft deprecated.",
+                browser: "Verwende jQuery.browser nicht",
+                browserSafari: "Verwende jQuery.browser.safari nicht - es ist deprecated. Wenn du eine Browser-Erkennung verwenden musst, nimm jQuery.browser.webkit.",
+                featureDetection: 'Das jQuery-Team empfiehlt jQuery.browser nicht zu verwenden. Verwende lieber Feature-Erkennung (siehe jQuery.support).',
+                boxModel: "Verwende jQuery.boxModel nicht.",
+                boxModelDeprecated: 'Deprecated in jQuery 1.3 (siehe jQuery.support)'
             }
         },
         
