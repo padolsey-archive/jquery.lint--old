@@ -55,8 +55,43 @@ test('css()', function(){
     $('<a/>').css('color','red').css('padding', 20);
     $('<a/>').css('a','b','c','d');
     
+    $('<a/>').css('color');
+    $('<a/>').css('padding-top');
     $('<a/>').css({});
     $('<a/>').css('background', '#FFF');
+    
+});
+
+test('attr()', function(){
+    
+    expect(2);
+    
+    $('<a/>').attr('rel','a').attr('href', '...');
+    $('<a/>').attr('a','b','c','d');
+    
+    $('<a/>').attr('a');
+    $('<a/>').attr('b');
+    $('<a/>').attr({});
+    $('<a/>').attr('b', 'd');
+    
+});
+
+test('bind()', function(){
+    
+    expect(3);
+    
+    // Throws error in 1.3:
+    $('<a/>').bind({});
+    
+    // Throws error in 1.4:
+    $('<a/>').bind('a',function(){}).bind('b', function(){});
+    
+    $('<a/>').bind('a','b','c','d');
+    $('<a/>').bind('b');
+    
+    $('<a/>').bind('a',function(){}).bind('b', {/*data*/}, function(){});
+    $('<a/>').bind('click', {a:1}, function(){});
+    
     
 });
 

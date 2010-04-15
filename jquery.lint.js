@@ -491,7 +491,14 @@
         
         // Check for calls like css().css().css()
         // May as well use css({...})
-        if (lint.level > 2 && !types.object(args[0]) && !isFunction(args[1]) && (/^(css|attr)$/.test(name) || (name === 'bind' && version >= '1.4'))) {
+        if (
+            lint.level > 2 &&
+            !types.object(args[0]) &&
+            (
+                (/^(css|attr)$/.test(name) && args[1] !== undefined) ||
+                (name === 'bind' && version >= '1.4' && /* Data no passed as [1] */!isFunction(args[2]))
+            )
+           ) {
             
             if (this._lastMethodCalled === name) {
                 _console.warn(locale.methodTwice.replace(/%0/, name));
