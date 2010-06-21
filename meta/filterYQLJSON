@@ -1,0 +1,44 @@
+// Hacky thing to filter YQL JSON produced from http://api.jquery.com/api
+
+var x = /*DATA FROM YQL*/;
+var y = {};
+
+function addSig(sig, m){
+        y[m.name].push(uuu={
+            added: sig.added
+        });
+        if (!sig.argument){return;}
+        if (sig.argument[0]) {
+            for (var i = 0; i < sig.argument.length; ++i){
+                uuu.arg = uuu.arg || [];
+                uuu.arg.push({
+                    name: sig.argument[i].name,
+                    type: sig.argument[i].type
+                });
+            }
+        } else {
+            uuu.arg = [{
+                name: sig.argument.name,
+                type: sig.argument.type
+            }];
+        }
+}
+
+x.map(function(m){
+    
+    var sig = m.signature;
+    if (!sig) {return []}
+    y[m.name] = y[m.name] || [];
+    //console.log(sig);return [];
+    if (sig[0]) {
+        for (var i = 0; i < sig.length; ++i){
+            addSig(sig[i], m);
+        }
+    } else {
+        addSig(sig, m);
+    }
+    
+    return [];
+});
+
+JSON.stringify(y).replace(/(\{|,)"(?!default|class)([a-z]+?)":/gi, '$1$2:');

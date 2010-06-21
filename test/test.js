@@ -1,5 +1,5 @@
 
-(function(){
+(function($){
 
 jQuery.LINT.console = {
     group:function(a,b,c){
@@ -86,16 +86,21 @@ test('bind()', function(){
     // Throws error in 1.4:
     $('<a/>').bind('a',function(){}).bind('b', function(){});
     
+    
+    // These throw errors in both 1.4 and 1.3
     $('<a/>').bind('a','b','c','d');
     $('<a/>').bind('b');
     
+    // These should be fine
     $('<a/>').bind('a',function(){}).bind('b', {/*data*/}, function(){});
     $('<a/>').bind('click', {a:1}, function(){});
     
     
 });
 
-test('selectors', function(){
+test('repeat selectors', function(){
+    
+    jQuery.LINT.enabledReports.noElementsFound = false;
     
     expect(1);
     
@@ -104,13 +109,15 @@ test('selectors', function(){
     $('a', struct);
     $('a', struct);
     
+    jQuery.LINT.enabledReports.noElementsFound = true;
+    
 });
 
 test('pseudo', function(){
     
     expect(3);
     
-    jQuery.LINT.specific.noElementsFound = false;
+    jQuery.LINT.enabledReports.noElementsFound = false;
     
     // valid
     $('div:not(.foo:last):first');
@@ -122,7 +129,7 @@ test('pseudo', function(){
     $(':ttt:yyy');
     $('div:not(.foo:abcdefg):first');
     
-    jQuery.LINT.specific.noElementsFound = true;
+    jQuery.LINT.enabledReports.noElementsFound = true;
     
 });
 
@@ -229,6 +236,8 @@ test('jQuery.ajax()', function(){
 
 test('DOM traversing methods', function(){
     
+    jQuery.LINT.enabledReports.noElementsFound = false;
+    
     expect(jQuery.fn.jquery >= '1.4' ? 27 : 24);
     
     var struct = jQuery('<div><a/><span/><a/><ul><li/></ul></div>')[0],
@@ -300,6 +309,8 @@ test('DOM traversing methods', function(){
     all.slice({});
     all.slice();
     
+    jQuery.LINT.enabledReports.noElementsFound = true;
+    
 });
 
 test('New plugin', function(){
@@ -309,7 +320,7 @@ test('New plugin', function(){
     jQuery.fn.foo = function(n){ return n + 2; };
     var x = jQuery.fn.foo.x = {};
     
-    jQuery.LINT.register('foo', [
+    jQuery.LINT.registerMethod('foo', [
         {
             arg: [
                 { name: 'firstArg', type: 'number' }
@@ -362,4 +373,24 @@ test('append/prepend', function(){
     
 });
 
-})();
+test('noElementsFound checks', function(){
+    
+    var meth = 'parents parent find children prev prevAll next nextAll closest'.split(' '),
+        dom = $('<div/>');
+        
+    expect(meth.length);
+    
+    $.each(meth, function(){
+        dom[this]('foo');
+    });
+    
+    // Check for false positives
+    //dom = jQuery('<div><a></a><a><span></span></a><a></a></div>').find('a:eq(1)');
+    
+    //$.each(meth, function(){
+        //dom[this]('*');
+    //});
+    
+});
+
+})(jQuery);
