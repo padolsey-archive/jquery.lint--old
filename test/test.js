@@ -384,13 +384,6 @@ test('noElementsFound checks', function(){
         dom[this]('foo');
     });
     
-    // Check for false positives
-    //dom = jQuery('<div><a></a><a><span></span></a><a></a></div>').find('a:eq(1)');
-    
-    //$.each(meth, function(){
-        //dom[this]('*');
-    //});
-    
 });
 
 test('extend()', function(){
