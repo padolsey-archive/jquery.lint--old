@@ -3,7 +3,10 @@ jQuery Lint
 Tested in jQuery 1.3.2 and 1.4
 
 ---
-**IMPORTANT** - This is a very young project. There are likely to be a few strange bugs. If you encounter one, please [raise an issue](http://github.com/jamespadolsey/jQuery-Lint/issues). Likely bugs could include:
+***UPDATE*** (21-06-2010) - The code-base has been refactored, and some of the API has been deprecated -- this should only affect those of you who have extended jQuery Lint. Please download the new version as it does include bug fixes and various other improvements.
+
+---
+**IMPORTANT** - If you encounter a bug, please [raise an issue](http://github.com/jamespadolsey/jQuery-Lint/issues). Likely bugs could include:
 
  * Reporting correct argument lists as incorrect.
  * Nested errors as a result of other oversights - e.g. you call `css()` incorrectly which might internally make a call to another method, which may then raise an error.

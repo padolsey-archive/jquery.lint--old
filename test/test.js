@@ -1,4 +1,4 @@
-
+// TODO: TEST NESTED FUNCTION CALLS E.g. filter(function(){ .. some invalid call .. })
 (function($){
 
 jQuery.LINT.console = {
