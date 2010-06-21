@@ -44,7 +44,7 @@ test('jQuery()', function(){
     $(/a/);
     
     $.LINT.level = 3;
-    $('a');
+    $('.nonExistent');
     
 });
 

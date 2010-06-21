@@ -1,10 +1,10 @@
 /**
  * jQuery Lint
  * ---
- * VERSION 0.36
+ * VERSION 1.00
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
- * report any potentially erroneous activity the console.
+ * report any potentially erroneous activity to the console.
  * ---
  * Idea from:
  *      http://markmail.org/message/wzkosk2s5jklpkv4
@@ -22,7 +22,9 @@
     
     var _jQuery = window['jQuery']; // Change as needed
     
-    
+    if (!_jQuery) {
+        return;
+    }
     
     var glob = window,
         
@@ -291,6 +293,7 @@
         },
         
         selectorCache = {},
+        jQueryMethods = extend({}, _jQuery.fn),
         internal = false;
         
     function logLocation() {
@@ -611,26 +614,17 @@
                 
             if (typeof selector === 'string' && lint.level > 1) {
                 
-                if (lint.enabledReports.noElementsFound && !ret[0]) {
-                    
-                    // No elements returned
-                    _console.warn(locale.noElementsFound.replace(/%0/, selector));
-                
-                } else {
-                    
-                    if (lint.enabledReports.repeatSelector) {
+                if (ret[0] && lint.enabledReports.repeatSelector) {
                         
-                        // Check for identical collection already in cache.
-                        if ( selectorCache[selector] && compare(selectorCache[selector], ret) ) {
-                            
-                            _console.warn(locale.repeatSelector);
-                            _console.groupCollapsed(locale.info);
-                                logLocation();
-                                _console.log(locale.selector + '"' + selector + '"');
-                                _console.log(locale.selectorAdvice);
-                            _console.groupEnd();
-                            
-                        }
+                    // Check for identical collection already in cache.
+                    if ( selectorCache[selector] && compare(selectorCache[selector], ret) ) {
+                        
+                        _console.warn(locale.repeatSelector);
+                        _console.groupCollapsed(locale.info);
+                            logLocation();
+                            _console.log(locale.selector + '"' + selector + '"');
+                            _console.log(locale.selectorAdvice);
+                        _console.groupEnd();
                         
                     }
                     
@@ -727,13 +721,15 @@
             var args = arguments,
                 hoc = this,
                 locale = lint.langs[lint.lang],
-                sliced = slice(hoc, 0, 10);
+                sliced = slice(hoc, 0, 10),
+                _console = lint.console;
             
             if (hoc.length > 10) {
                 sliced.push('...');
             }
             
             if (
+                !internal &&
                 lint.level > 2 &&
                 !types.object(args[0]) &&
                 (
@@ -777,6 +773,29 @@
         
     });
 
-
+    each(
+        ['find', 'children', 'parent', 'parents',
+         'next', 'nextAll', 'prev', 'prevAll',
+         'first', 'last', 'closest', 'siblings'],
+        function(i, methodName) {
+            
+            var pureMethod = jQueryMethods[methodName];
+            
+            addCheck(methodName, 2, function(selector){
+                
+                if ( lint.enabledReports.noElementsFound &&  !pureMethod.apply(this, arguments).length ) {
+                    
+                    if (types['function'](selector)) {
+                        selector = '[FUNCTION]';
+                    }
+                    
+                     lint.console.warn(lint.langs[lint.lang].noElementsFound.replace(/%0/, selector));
+                    
+                }
+                
+            });
+            
+        }
+    )
    
 })();
