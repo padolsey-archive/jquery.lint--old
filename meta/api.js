@@ -1736,7 +1736,7 @@
         added: "1.0",
         arg: [{
             name: "target",
-            type: "Object"
+            type: "Object, Function"
         }, {
             name: "object1",
             type: "Object",
@@ -1754,7 +1754,7 @@
             optional: true
         }, {
             name: "target",
-            type: "Object"
+            type: "Object, Function"
         }, {
             name: "object1",
             type: "Object"

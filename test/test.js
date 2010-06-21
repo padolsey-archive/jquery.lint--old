@@ -393,4 +393,22 @@ test('noElementsFound checks', function(){
     
 });
 
+test('extend()', function(){
+    
+    expect(2);
+    
+    // Invalid:
+    $.extend(1, {}, {});
+    $.extend(true);
+    
+    // Valid:
+    $.extend({});
+    $.extend({}, {});
+    $.extend({}, {}, {});
+    $.extend(function(){}, {}, {});
+    $.extend(true, function(){}, {}, {});
+    $.extend(true, {}, new function(){this.x = 1;});
+    
+});
+
 })(jQuery);
