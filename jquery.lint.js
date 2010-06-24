@@ -1,7 +1,7 @@
 /**
  * jQuery Lint
  * ---
- * VERSION 1.00
+ * VERSION 1.01
  * ---
  * jQuery lint creates a thin blanket over jQuery that'll
  * report any potentially erroneous activity to the console.
@@ -138,7 +138,7 @@
         },
         
         lint = {
-            version: '1.00',
+            version: '1.01',
             level: 3,
             checks: checks,
             special: checks, // Support decrecated API
@@ -294,7 +294,8 @@
         
         selectorCache = {},
         jQueryMethods = extend({}, _jQuery.fn),
-        internal = false;
+        internal = false,
+        fromInit = false;
         
     function logLocation() {
         
@@ -416,7 +417,29 @@
         return false;
             
     }
+    
+    function runFunction(fn, args, isInternal, thisObj) {
         
+        // Runs a function, while enabling/disabling
+        // the 'internal' flag as necessary.
+        
+        var wasInternal = internal, ret;
+        
+        internal = isInternal;
+        
+        try {
+            ret = fn.apply(thisObj, args);
+        } catch(e) {
+            internal = wasInternal;
+            throw e;
+        }
+        
+        internal = wasInternal;
+        
+        return ret;
+        
+    }
+    
     function registerMethod(name, methodAPI) {
         
         var obj = /^jQuery\./.test(name) ? _jQuery : _jQuery.fn,
@@ -424,18 +447,29 @@
             
         obj[methodName] = (function(meth, name){
             return extend(function() {
-                return coverMethod.call(this, name, function(){
-                    var wasInternal = internal;
-                    internal = true;
-                    try {
-                        var ret = meth.apply(this, arguments);
-                    } catch(e) {
-                        internal = wasInternal;
-                        throw e;
+                
+                var args = slice(arguments),
+                    _internal = internal;
+                
+                // Cover functions so that the internal flag
+                // is disabled before they are called
+                
+                each(args, function(i, fn){
+                    if (typeof fn == 'function') {
+                        args[i] = function() {
+                            // Run it as non-internal
+                            return runFunction(fn, arguments, _internal, this);
+                        };
                     }
-                    internal = wasInternal;
-                    return ret;
-                }, arguments);
+                });
+                
+                return coverMethod.call(this, name, function(){
+                    
+                    // Run it as internal
+                    return runFunction(meth, args, true, this);
+                    
+                }, args);
+                
             }, meth);
         })(obj[methodName], name);
         
@@ -588,22 +622,10 @@
             
             var locale = lint.langs[lint.lang],
                 ret = coverMethod.call(this, 'jQuery', function(){
-                
-                    // Set internal flag to avoid incorrect internal method
-                    // calls being reported by Lint.
                     
-                    var wasInternal = internal;
-                    internal = true;
-                    try {
-                        var instance = new _init(selector, context);
-                        extend(instance, this); // Add any flags (added before instantiation)
-                    } catch(e) {
-                        internal = wasInternal;
-                        throw e;
-                    }
-                    internal = wasInternal;
-                    
-                    return instance
+                    return runFunction(function(){
+                        return new _init(selector, context);
+                    }, [], true, this)
                 
                 }, arguments),
                 _console = lint.console;
@@ -611,13 +633,13 @@
             // Deal with situations where no elements are returned
             // and for the same selector being used more than once
             // to no effect
+            
+            if (!internal && typeof selector === 'string' && lint.level > 1) {
                 
-            if (typeof selector === 'string' && lint.level > 1) {
-                
-                if (ret[0] && lint.enabledReports.repeatSelector) {
+                if (ret[0]) {
                         
                     // Check for identical collection already in cache.
-                    if ( selectorCache[selector] && compare(selectorCache[selector], ret) ) {
+                    if ( lint.enabledReports.repeatSelector && selectorCache[selector] && compare(selectorCache[selector], ret) ) {
                         
                         _console.warn(locale.repeatSelector);
                         _console.groupCollapsed(locale.info);
@@ -626,6 +648,13 @@
                             _console.log(locale.selectorAdvice);
                         _console.groupEnd();
                         
+                    }
+                    
+                } else {
+                    
+                    if (lint.enabledReports.noElementsFound) {
+                        lint.console.warn(lint.langs[lint.lang].noElementsFound.replace(/%0/, selector));
+                        logLocation();
                     }
                     
                 }
@@ -669,7 +698,7 @@
         // Find invalid filters (e.g. :hover, :active etc.)
         // suggested by Paul Irish
         
-        if (lint.enabledReports.invalidFilters && typeof selector === 'string' && !/^[^<]*(<[\w\W]+>)[^>]*$/.test(selector)) {
+        if (!internal && lint.enabledReports.invalidFilters && typeof selector === 'string' && !/^[^<]*(<[\w\W]+>)[^>]*$/.test(selector)) {
             
             // It's a string, and NOT html - must be a selector
             
@@ -776,20 +805,22 @@
     each(
         ['find', 'children', 'parent', 'parents',
          'next', 'nextAll', 'prev', 'prevAll',
-         'first', 'last', 'closest', 'siblings'],
+         'first', 'last', 'closest', 'siblings',
+         'parentsUntil', 'nextUntil', 'prevUntil'],
         function(i, methodName) {
             
             var pureMethod = jQueryMethods[methodName];
             
             addCheck(methodName, 2, function(selector){
                 
-                if ( lint.enabledReports.noElementsFound &&  !pureMethod.apply(this, arguments).length ) {
+                if ( !internal && lint.enabledReports.noElementsFound &&  !runFunction(pureMethod, arguments, true, this).length ) {
                     
                     if (types['function'](selector)) {
                         selector = '[FUNCTION]';
                     }
                     
                      lint.console.warn(lint.langs[lint.lang].noElementsFound.replace(/%0/, selector));
+                     logLocation();
                     
                 }
                 

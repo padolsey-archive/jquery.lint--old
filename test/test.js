@@ -25,8 +25,14 @@ jQuery.ajaxSetup({
     xhr: function(){
         return {
             open: function(){},
-            send: function(){},
-            responseText: ''
+            send: function(){
+                this.onreadystatechange();
+            },
+            responseText: '',
+            status: 200,
+            readyState: 4,
+            getResponseHeader: function(){},
+            abort: function(){}
         }
     }
 });
@@ -213,7 +219,7 @@ test('each()', function(){
 
 test('add()', function(){
     
-    expect(jQuery.fn.jquery < '1.4' ? 4 : 2);
+    expect(jQuery.fn.jquery < '1.4' ? 3 : 2);
     
     var struct = $('<div><a/><a/></div>');
     
@@ -402,6 +408,28 @@ test('extend()', function(){
     $.extend(true, function(){}, {}, {});
     $.extend(true, {}, new function(){this.x = 1;});
     
+});
+
+test('Callbacks to jQuery methods', function(){
+    
+    expect(3);
+    
+    var j = $('<div/>');
+
+    j.filter(function(){
+        j.find('a'); // should get noElementsFound error
+    });
+    
+    j.each(function(){
+        j.find('a'); // should get noElementsFound error
+    });
+    
+    stop();
+    $.get('foo.xml', function(){
+        j.find('a'); // should get noElementsFound error
+        start();
+    });
+
 });
 
 })(jQuery);
