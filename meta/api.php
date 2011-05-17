@@ -105,6 +105,7 @@ class Api_Parser {
                         }
                         elseif ($aArg['name'] === 'target' and $aArg['type'] === 'Object') {
                             $aArg['type'] = 'Object, Function';
+                            $aArg['multiple'] = true;
                         }
 
                         $sName = $aArg['name'];

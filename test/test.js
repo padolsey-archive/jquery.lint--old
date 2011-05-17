@@ -414,6 +414,8 @@ test('extend()', function(){
     $.extend(function(){}, {}, {});
     $.extend(true, function(){}, {}, {});
     $.extend(true, {}, new function(){this.x = 1;});
+    $.extend(function(){}, function(){});
+    $.extend(true, function(){}, function(){});
 
 });
 
