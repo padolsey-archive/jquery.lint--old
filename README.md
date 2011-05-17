@@ -1,6 +1,6 @@
 jQuery Lint
 ===
-Tested in jQuery 1.3.2 and 1.4
+Tested in jQuery 1.4, 1.5 and 1.6 - 1.3.2 is currently not working fine
 
 ---
 ***UPDATE*** (21-06-2010) - The code-base has been refactored, and some of the API has been deprecated -- this should only affect those of you who have extended jQuery Lint. Please download the new version as it does include bug fixes and various other improvements.

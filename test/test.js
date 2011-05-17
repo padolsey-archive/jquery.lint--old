@@ -43,7 +43,9 @@ test('jQuery()', function(){
     $.LINT.level = 1;
 
     if ($.fn.jquery >= '1.4') jQuery();
-
+    $(document).ready(function() {});
+    $(function() {});
+    
     $('#k928372');
     $('.k928372');
 
@@ -52,6 +54,7 @@ test('jQuery()', function(){
 
     $.LINT.level = 3;
     $('.nonExistent');
+
 
 });
 
@@ -411,6 +414,8 @@ test('extend()', function(){
     $.extend(function(){}, {}, {});
     $.extend(true, function(){}, {}, {});
     $.extend(true, {}, new function(){this.x = 1;});
+    $.extend(function(){}, function(){});
+    $.extend(true, function(){}, function(){});
 
 });
 
