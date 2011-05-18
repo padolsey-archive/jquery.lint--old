@@ -421,7 +421,7 @@ test('extend()', function(){
 
 test('Callbacks to jQuery methods', function(){
 
-    expect(3);
+    expect(jQuery.fn.jquery <= '1.4' ? 3 : 2);
 
     var j = $('<div/>');
 
@@ -433,11 +433,13 @@ test('Callbacks to jQuery methods', function(){
         j.find('a'); // should get noElementsFound error
     });
 
-    stop();
-    $.get('foo.xml', function(){
-        j.find('a'); // should get noElementsFound error
-        start();
-    });
+    if (jQuery.fn.jquery <= '1.4') {
+        stop();
+        $.get('foo.xml', function(){
+            start();
+            j.find('a'); // should get noElementsFound error
+        });
+    }
 
 });
 
