@@ -39,13 +39,13 @@ jQuery.ajaxSetup({
 
 test('jQuery()', function(){
 
-    expect(3);
+    expect(4);
     $.LINT.level = 1;
 
     if ($.fn.jquery >= '1.4') jQuery();
     $(document).ready(function() {});
     $(function() {});
-    
+
     $('#k928372');
     $('.k928372');
 
@@ -111,6 +111,7 @@ test('bind()', function(){
 test('repeat selectors', function(){
 
     jQuery.LINT.enabledReports.noElementsFound = false;
+    jQuery.LINT.enabledReports.slowSelector = false;
 
     expect(1);
 
@@ -120,6 +121,7 @@ test('repeat selectors', function(){
     $('a', struct);
 
     jQuery.LINT.enabledReports.noElementsFound = true;
+    jQuery.LINT.enabledReports.slowSelector = true;
 
 });
 
@@ -128,6 +130,7 @@ test('pseudo', function(){
     expect(3);
 
     jQuery.LINT.enabledReports.noElementsFound = false;
+    jQuery.LINT.enabledReports.slowSelector = false;
 
     // valid
     $('div:not(.foo:last):first');
@@ -140,6 +143,7 @@ test('pseudo', function(){
     $('div:not(.foo:abcdefg):first');
 
     jQuery.LINT.enabledReports.noElementsFound = true;
+    jQuery.LINT.enabledReports.slowSelector = true;
 
 });
 
@@ -441,6 +445,25 @@ test('Callbacks to jQuery methods', function(){
         });
     }
 
+});
+
+test('Test inefficient selectors', function(){
+    jQuery.LINT.enabledReports.noElementsFound = false;
+    jQuery.LINT.enabledReports.slowSelector = true;
+    $.LINT.level = 2;
+
+    expect(3);
+
+    $('#k928372');
+    $('div.k928372');
+    var j = $('#qunit-testrunner-toolbar');
+    $('.k928372', j);
+
+    $('#k928372 > .k928372');
+    $('.k928372', {});
+    $('.k928372');
+
+    jQuery.LINT.enabledReports.noElementsFound = true;
 });
 
 })(jQuery);
