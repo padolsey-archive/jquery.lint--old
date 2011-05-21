@@ -711,7 +711,8 @@
                 var slowSelectors = [];
                 var selectors = selector.split(',');
                 for (i in selectors) {
-                    if (/(^|\w*?\s)\.\w/.test(selectors[i]) && (typeof context !== "object" || !context.length)) {
+                    if ((/(^|\w*?\s)\.\w/.test(selectors[i]) && (typeof context !== "object" || !context.length))
+                        || /^(.+)#\w/.test(selectors[i])) {
                         slowSelectors.push(selectors[i]);
                     }
                 }

@@ -452,7 +452,7 @@ test('Test inefficient selectors', function(){
     jQuery.LINT.enabledReports.slowSelector = true;
     $.LINT.level = 2;
 
-    expect(3);
+    expect(5);
 
     $('#k928372');
     $('div.k928372');
@@ -462,6 +462,8 @@ test('Test inefficient selectors', function(){
     $('#k928372 > .k928372');
     $('.k928372', {});
     $('.k928372');
+    $('div#k928372');
+    $('div #k928372');
 
     jQuery.LINT.enabledReports.noElementsFound = true;
 });
