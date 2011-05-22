@@ -74,10 +74,11 @@ test('css()', function(){
 
 test('attr()', function(){
 
-    expect(2);
+    expect(3);
 
     $('<a/>').attr('rel','a').attr('href', '...');
     $('<a/>').attr('a','b','c','d');
+    $('<a/>').attr('id');
 
     $('<a/>').attr('a');
     $('<a/>').attr('b');
@@ -452,7 +453,7 @@ test('Test inefficient selectors', function(){
     jQuery.LINT.enabledReports.slowSelector = true;
     $.LINT.level = 2;
 
-    expect(5);
+    expect(6);
 
     $('#k928372');
     $('div.k928372');
@@ -464,6 +465,7 @@ test('Test inefficient selectors', function(){
     $('.k928372');
     $('div#k928372');
     $('div #k928372');
+    $('#id #k928372');
 
     jQuery.LINT.enabledReports.noElementsFound = true;
 });

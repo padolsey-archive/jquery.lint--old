@@ -46,6 +46,7 @@
                 combineCalls: 'Why not combine these calls by passing an object? E.g. \n%0(%1)',
                 methodTwice: "You've called %0(...) more than once on the same jQuery object",
                 triggeredBy: 'Triggered by %0 event',
+                unnecessary: 'Unnecessary method call %0(%i)',
                 event: 'Event:',
                 handler: 'Handler:',
                 location: 'Location:',
@@ -75,6 +76,7 @@
                 combineCalls: 'Warum kombinierst du diese Aufrufen nicht, indem du ein Objekt übergibst? z.B. \n%0(%1)',
                 methodTwice: "Du hast %0(...) mehr als ein mal auf dem selben jQuery-Objekt aufgerufen",
                 triggeredBy: 'Vom %0-Event getriggert',
+                unnecessary: 'Unnoetiger Methodenaufruf %0(%i)',
                 event: 'Event:',
                 handler: 'Handler:',
                 location: 'Location:',
@@ -685,7 +687,7 @@
     // Some special checks //
     /////////////////////////
     addCheck('jQuery', 2, function(selector, context) {
-        var locale = locale = lint.langs[lint.lang];
+        var locale = lint.langs[lint.lang];
 
         // It's a string, and NOT html - must be a selector
         if (!internal && typeof selector === 'string' && !/^[^<]*(<[\w\W]+>)[^>]*$/.test(selector)) {
@@ -740,6 +742,25 @@
         if (this._lint_noArgs) {
             return lint.langs[lint.lang].badReadyCall;
         }
+    });
+
+    // check for attr('id') - element.id is faster
+    each({'attr': ['id']}, function(method, attributes) {
+        addCheck(method, 3, function() {
+            var argLength = attributes.length;
+            if (typeof arguments !== 'undefined' && argLength > 0 && arguments.length == argLength) {
+                var match = true;
+                for (var m=0; m < argLength; m++) {
+                    if(arguments[m] != attributes[m]) {
+                        match = false;
+                    }
+                }
+
+                if (match === true) {
+                    return lint.langs[lint.lang].unnecessary.replace(/%0/, method).replace(/%1/, attributes.join('\n'));
+                }
+            }
+        });
     });
 
     // Check for calls like css().css().css()
