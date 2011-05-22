@@ -31,12 +31,12 @@
         langs = {
             en: {
                 incorrectCall: '%0(%1) called incorrectly',
-                specialCheckFailed: '%0(...) special check failed',
+                specialCheckFailed: '%0(%1) special check failed',
                 moreInfo: 'More info:',
                 youPassed: 'You passed: ',
                 collection: 'Collection:',
                 availableSigsInclude: 'Available signatures include: ',
-                errorThrown: 'When I called %0(...) with your args, an error was thrown!',
+                errorThrown: 'When I called %0(%1) with your args, an error was thrown!',
                 repeatSelector: "You've used the same selector more than once.",
                 info: 'Info',
                 selector: 'Selector: ',
@@ -44,9 +44,9 @@
                 selectorAdvice: "You should only use the same selector more than once when you know the returned collection will be different. For example, if you've added more elements to the page that may comply with the selector",
                 noElementsFound: 'No elements were found with the selector: "%0"',
                 combineCalls: 'Why not combine these calls by passing an object? E.g. \n%0(%1)',
-                methodTwice: "You've called %0(...) more than once on the same jQuery object",
+                methodTwice: "You've called %0(%1) more than once on the same jQuery object",
                 triggeredBy: 'Triggered by %0 event',
-                unnecessary: 'Unnecessary method call %0(%i)',
+                unnecessary: 'Unnecessary method call %0(%1)',
                 event: 'Event:',
                 handler: 'Handler:',
                 location: 'Location:',
@@ -61,12 +61,12 @@
 
             de: {
                 incorrectCall: '%0(%1) falsch aufgerufen',
-                specialCheckFailed: '%0(...) Spezial-Check fehlgeschlagen',
+                specialCheckFailed: '%0(%1) Spezial-Check fehlgeschlagen',
                 moreInfo: 'Mehr Informationen:',
                 youPassed: 'Du hast übergeben: ',
                 collection: 'Sammlung:',
                 availableSigsInclude: 'Verfügbare Signaturen enthalten: ',
-                errorThrown: 'Als ich %0(...) mit deinen Argumenten aufgerufen habe, wurde ein Fehler geworfen!',
+                errorThrown: 'Als ich %0(%1) mit deinen Argumenten aufgerufen habe, wurde ein Fehler geworfen!',
                 repeatSelector: "Du hast den selben Selektor mehrmals verwendet.",
                 info: 'Info',
                 selector: 'Selektor: ',
@@ -74,9 +74,9 @@
                 selectorAdvice: "Du solltest den selben Selektor nur dann verwenden, wenn du weißt dass sich das Ergebnis ändert. Zum Beispiel, wenn du Elemente zu einer Seite hinzufügst, die den Selektor erfüllen",
                 noElementsFound: 'Keine Elemente gefunden für den Selektor: "%0"',
                 combineCalls: 'Warum kombinierst du diese Aufrufen nicht, indem du ein Objekt übergibst? z.B. \n%0(%1)',
-                methodTwice: "Du hast %0(...) mehr als ein mal auf dem selben jQuery-Objekt aufgerufen",
+                methodTwice: "Du hast %0(%1) mehr als ein mal auf dem selben jQuery-Objekt aufgerufen",
                 triggeredBy: 'Vom %0-Event getriggert',
-                unnecessary: 'Unnoetiger Methodenaufruf %0(%i)',
+                unnecessary: 'Unnoetiger Methodenaufruf %0(%1)',
                 event: 'Event:',
                 handler: 'Handler:',
                 location: 'Location:',
@@ -506,7 +506,6 @@
 
                 // Perform special checks for current level and
                 // all levels below current level.
-
                 var lvl = lint.level + 1,
                     results = [],
                     check;
@@ -588,7 +587,7 @@
                     if (isFunction(checkResult)) {
                         checkResult(_console);
                     } else {
-                        _console.warn(locale.specialCheckFailed.replace(/%0/, name));
+                        _console.warn(locale.specialCheckFailed.replace(/%0/, name).replace(/%1/, args.toString()));
                         _console.groupCollapsed(locale.moreInfo);
                             _console.log(checkResult);
                             _console.log(locale.collection, sliced);
@@ -608,7 +607,7 @@
         } catch(e) {
 
             _console.warn(
-                locale.errorThrown.replace(/%0/, name), e
+                locale.errorThrown.replace(/%0/, name).replace(/%1/, args.toString()), e
             );
 
             _console.groupCollapsed(locale.moreInfo);
@@ -779,11 +778,7 @@
                 sliced.push('...');
             }
 
-            if (
-                !internal &&
-                lint.level > 2 &&
-                !types.object(args[0]) &&
-                (
+            if (!internal && !types.object(args[0]) && (
                     (/^(css|attr)$/.test(methodName) && args[1] !== undefined) ||
                     (/^(bind|one)$/.test(methodName) && version >= '1.4' && /* Data no passed as [1] */!isFunction(args[2]))
                 )
@@ -791,7 +786,7 @@
 
                 if (this._lastMethodCalled === methodName) {
 
-                    _console.warn(locale.methodTwice.replace(/%0/, methodName));
+                    _console.warn(locale.methodTwice.replace(/%0/, methodName).replace(/%1/, args.toString()));
 
                     _console.groupCollapsed(locale.moreInfo);
 
