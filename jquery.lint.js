@@ -373,7 +373,6 @@
             }
 
             matches = isValidType(sigArg.type, args[argIndex]);
-            console.log(matches + ' ' + sigArg.type + ' ' + args[argIndex]);
             if (!matches) {
                 if (sigArg.optional) {
                     if (args[argIndex] === undefined || args[argIndex] === null) {
