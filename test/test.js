@@ -87,6 +87,25 @@ test('attr()', function(){
 
 });
 
+test('data()', function(){
+    var struct = $('<div><a/><a/></div>');
+
+    if ($.fn.jquery >= '1.4') {
+        expect(3);
+
+        // working
+        jQuery.data(document.body, 'data', 'data');
+        jQuery.data(document.body, 'events', undefined, true);
+        $('<a/>').data('data', 'data');
+        $('<a/>').data('data');
+
+        // failing
+        jQuery.data(struct, 'data', 'data');
+        jQuery.data([]);
+        jQuery.data({});
+    }
+});
+
 test('bind()', function(){
 
     expect(3);

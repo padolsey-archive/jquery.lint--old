@@ -29,7 +29,7 @@ class Api_Parser {
     public function load($sUrl) {
         $aContextOptions = array(
             'http' => array(
-                'method' => "GET"
+                'method' => 'GET'
             )
         );
         $rStreamContext = stream_context_create($aContextOptions);
@@ -105,6 +105,11 @@ class Api_Parser {
                         }
                         elseif ($aArg['name'] === 'target' and $aArg['type'] === 'Object') {
                             $aArg['type'] = 'Object, Function';
+                            $aArg['multiple'] = true;
+                        }
+                        elseif ($aArg['name'] === 'value' and $aArg['type'] === 'Object') {
+                            // hack to catch data-internal-usage
+                            $aArg['type'] = '*';
                             $aArg['multiple'] = true;
                         }
 
