@@ -39,13 +39,13 @@ jQuery.ajaxSetup({
 
 test('jQuery()', function(){
 
-    expect(3);
+    expect(4);
     $.LINT.level = 1;
 
     if ($.fn.jquery >= '1.4') jQuery();
     $(document).ready(function() {});
     $(function() {});
-    
+
     $('#k928372');
     $('.k928372');
 
@@ -74,16 +74,36 @@ test('css()', function(){
 
 test('attr()', function(){
 
-    expect(2);
+    expect(3);
 
     $('<a/>').attr('rel','a').attr('href', '...');
     $('<a/>').attr('a','b','c','d');
+    $('<a/>').attr('id');
 
     $('<a/>').attr('a');
     $('<a/>').attr('b');
     $('<a/>').attr({});
     $('<a/>').attr('b', 'd');
 
+});
+
+test('data()', function(){
+    var struct = $('<div><a/><a/></div>');
+
+    if ($.fn.jquery >= '1.4') {
+        expect(3);
+
+        // working
+        jQuery.data(document.body, 'data', 'data');
+        jQuery.data(document.body, 'events', undefined, true);
+        $('<a/>').data('data', 'data');
+        $('<a/>').data('data');
+
+        // failing
+        jQuery.data(struct, 'data', 'data');
+        jQuery.data([]);
+        jQuery.data({});
+    }
 });
 
 test('bind()', function(){
@@ -111,6 +131,7 @@ test('bind()', function(){
 test('repeat selectors', function(){
 
     jQuery.LINT.enabledReports.noElementsFound = false;
+    jQuery.LINT.enabledReports.slowSelector = false;
 
     expect(1);
 
@@ -120,6 +141,7 @@ test('repeat selectors', function(){
     $('a', struct);
 
     jQuery.LINT.enabledReports.noElementsFound = true;
+    jQuery.LINT.enabledReports.slowSelector = true;
 
 });
 
@@ -128,6 +150,7 @@ test('pseudo', function(){
     expect(3);
 
     jQuery.LINT.enabledReports.noElementsFound = false;
+    jQuery.LINT.enabledReports.slowSelector = false;
 
     // valid
     $('div:not(.foo:last):first');
@@ -140,6 +163,7 @@ test('pseudo', function(){
     $('div:not(.foo:abcdefg):first');
 
     jQuery.LINT.enabledReports.noElementsFound = true;
+    jQuery.LINT.enabledReports.slowSelector = true;
 
 });
 
@@ -421,7 +445,7 @@ test('extend()', function(){
 
 test('Callbacks to jQuery methods', function(){
 
-    expect(3);
+    expect(jQuery.fn.jquery <= '1.4' ? 3 : 2);
 
     var j = $('<div/>');
 
@@ -433,12 +457,36 @@ test('Callbacks to jQuery methods', function(){
         j.find('a'); // should get noElementsFound error
     });
 
-    stop();
-    $.get('foo.xml', function(){
-        j.find('a'); // should get noElementsFound error
-        start();
-    });
+    if (jQuery.fn.jquery <= '1.4') {
+        stop();
+        $.get('foo.xml', function(){
+            start();
+            j.find('a'); // should get noElementsFound error
+        });
+    }
 
+});
+
+test('Test inefficient selectors', function(){
+    jQuery.LINT.enabledReports.noElementsFound = false;
+    jQuery.LINT.enabledReports.slowSelector = true;
+    $.LINT.level = 2;
+
+    expect(6);
+
+    $('#k928372');
+    $('div.k928372');
+    var j = $('#qunit-testrunner-toolbar');
+    $('.k928372', j);
+
+    $('#k928372 > .k928372');
+    $('.k928372', {});
+    $('.k928372');
+    $('div#k928372');
+    $('div #k928372');
+    $('#id #k928372');
+
+    jQuery.LINT.enabledReports.noElementsFound = true;
 });
 
 })(jQuery);
