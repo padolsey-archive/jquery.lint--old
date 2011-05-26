@@ -58,6 +58,23 @@ test('jQuery()', function(){
 
 });
 
+test('text()/html()', function(){
+    expect(4);
+
+    // working
+    $('<a/>').text('test');
+    $('<a/>').text(5).html(5);
+    $('<a/>').html('<a/>');
+    $('<a/>').text();
+    $('<a/>').html();
+
+    // fail
+    $('<a/>').text({});
+    $('<a/>').html({});
+    $('<a/>').html($('<div/>'));
+    $('<a/>').text($('<div/>'));
+});
+
 test('css()', function(){
 
     expect(2);
