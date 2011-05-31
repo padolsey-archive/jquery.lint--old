@@ -26,6 +26,10 @@
         return;
     }
 
+    if(typeof console === "undefined") {
+        console = { log: function() { } };
+    }
+
     var glob = window,
 
         langs = {
