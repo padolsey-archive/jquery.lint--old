@@ -132,7 +132,6 @@ test('bind()', function(){
     // Throws error in 1.4:
     $('<a/>').bind('a',function(){}).bind('b', function(){});
 
-
     // These throw errors in both 1.4 and 1.3
     $('<a/>').bind('a','b','c','d');
     $('<a/>').bind('b');
@@ -141,6 +140,23 @@ test('bind()', function(){
     $('<a/>').bind('a',function(){}).bind('b', {/*data*/}, function(){});
     $('<a/>').bind('click', {a:1}, function(){});
 });
+
+test('live()/delegate()', function(){
+    if ($.fn.jquery >= '1.4') {
+        expect(2);
+
+        //  failing
+        $('<a/>').live('a','b','c','d');
+        $('<a/>').live('b');
+        $('<a/>').live({});
+
+        // working
+        $('<a/>').live('a',function(){});
+        $('<a/>').live('b', {/*data*/}, function(){});
+        $('<a/>').live('click', {a:1}, function(){});
+    }
+});
+
 
 test('short event-handlers', function(){
     expect(1);
