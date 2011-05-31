@@ -26,15 +26,6 @@
         return;
     }
 
-    (function (con) {
-        // the dummy function
-        function dummy() {};
-
-        for(var methods = ['error','info','log','warn'], func; func = methods.pop();) {
-            con[func] = con[func] || dummy;
-        }
-    }(window.console=window.console = {}));
-
     var glob = window,
 
         langs = {
@@ -49,7 +40,7 @@
                 repeatSelector: "You've used the same selector more than once.",
                 info: 'Info',
                 selector: 'Selector: ',
-                slowSelector: 'Selector: %0\nSelectors should be as specific as possible and should be "class only"',
+                slowSelector: 'Selector: %0\nSelectors should be as specific as possible, not overqualified and never "class only"',
                 selectorAdvice: "You should only use the same selector more than once when you know the returned collection will be different. For example, if you've added more elements to the page that may comply with the selector",
                 noElementsFound: 'No elements were found with the selector: "%0"',
                 combineCalls: 'Why not combine these calls by passing an object? E.g. \n%0(%1)',
@@ -79,7 +70,7 @@
                 repeatSelector: "Du hast den selben Selektor mehrmals verwendet.",
                 info: 'Info',
                 selector: 'Selektor: ',
-                slowSelector: 'Selektor: %0\nSelektoren sollten so spezifisch wie moeglich sein und nicht nur anhand einer Klasse selektieren',
+                slowSelector: 'Selektor: %0\nSelektoren sollten so spezifisch wie moeglich sein, nicht ueberqualifiziert und nicht nur anhand einer Klasse selektieren',
                 selectorAdvice: "Du solltest den selben Selektor nur dann verwenden, wenn du weißt dass sich das Ergebnis ändert. Zum Beispiel, wenn du Elemente zu einer Seite hinzufügst, die den Selektor erfüllen",
                 noElementsFound: 'Keine Elemente gefunden für den Selektor: "%0"',
                 combineCalls: 'Warum kombinierst du diese Aufrufen nicht, indem du ein Objekt übergibst? z.B. \n%0(%1)',
@@ -717,10 +708,9 @@
                 var slowSelectors = [];
                 var selectors = selector.split(',');
                 for (i in selectors) {
-                    var tSelector = _jQuery.trim(selectors[i]);
-                    if ((/(^|\w*?\s)\.\w/.test(tSelector) && (typeof context !== "object" || !context.length))
-                        || /^(.+)#\w/.test(tSelector)) {
-                        slowSelectors.push(tSelector);
+                    if ((/(^|\w*?\s)\.\w/.test(selectors[i]) && (typeof context !== "object" || !context.length))
+                        || /^(.+)#\w/.test(selectors[i])) {
+                        slowSelectors.push(selectors[i]);
                     }
                 }
 
