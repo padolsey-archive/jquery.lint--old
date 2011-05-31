@@ -717,9 +717,10 @@
                 var slowSelectors = [];
                 var selectors = selector.split(',');
                 for (i in selectors) {
-                    if ((/(^|\w*?\s)\.\w/.test(selectors[i]) && (typeof context !== "object" || !context.length))
-                        || /^(.+)#\w/.test(selectors[i])) {
-                        slowSelectors.push(selectors[i]);
+                    var tSelector = _jQuery.trim(selectors[i]);
+                    if ((/(^|\w*?\s)\.\w/.test(tSelector) && (typeof context !== "object" || !context.length))
+                        || /^(.+)#\w/.test(tSelector)) {
+                        slowSelectors.push(tSelector);
                     }
                 }
 

@@ -491,6 +491,7 @@ test('Test inefficient selectors', function(){
 
     expect(6);
 
+    $('#id, #k928372');
     $('#k928372');
     $('div.k928372');
     var j = $('#qunit-testrunner-toolbar');
