@@ -26,9 +26,14 @@
         return;
     }
 
-    if(typeof console === "undefined") {
-        console = { log: function() { } };
-    }
+    (function (con) {
+        // the dummy function
+        function dummy() {};
+
+        for(var methods = ['error','info','log','warn'], func; func = methods.pop();) {
+            con[func] = con[func] || dummy;
+        }
+    }(window.console=window.console = {}));
 
     var glob = window,
 
