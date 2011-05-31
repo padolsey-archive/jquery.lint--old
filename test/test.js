@@ -124,7 +124,6 @@ test('data()', function(){
 });
 
 test('bind()', function(){
-
     expect(3);
 
     // Throws error in 1.3:
@@ -141,8 +140,14 @@ test('bind()', function(){
     // These should be fine
     $('<a/>').bind('a',function(){}).bind('b', {/*data*/}, function(){});
     $('<a/>').bind('click', {a:1}, function(){});
+});
 
+test('short event-handlers', function(){
+    expect(1);
 
+    $('<a/>').click(function() {});
+    $('#id').click(function() {});
+    $('#qunit-header').click(function() {});
 });
 
 test('repeat selectors', function(){
