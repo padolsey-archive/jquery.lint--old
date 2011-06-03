@@ -26,15 +26,6 @@
         return;
     }
 
-    (function (con) {
-        // the dummy function
-        function dummy() {};
-
-        for(var methods = ['error','info','log','warn'], func; func = methods.pop();) {
-            con[func] = con[func] || dummy;
-        }
-    }(window.console = window.console || {}));
-
     var glob = window,
 
         langs = {
@@ -67,7 +58,6 @@
                 boxModel: "Don't use jQuery.boxModel.",
                 boxModelDeprecated: 'Deprecated in jQuery 1.3 (see jQuery.support)'
             },
-
             de: {
                 incorrectCall: '%0(%1) falsch aufgerufen',
                 specialCheckFailed: '%0(%1) Spezial-Check fehlgeschlagen',
