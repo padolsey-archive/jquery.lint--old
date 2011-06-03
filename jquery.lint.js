@@ -33,7 +33,7 @@
         for(var methods = ['error','info','log','warn'], func; func = methods.pop();) {
             con[func] = con[func] || dummy;
         }
-    }(window.console=window.console = {}));
+    }(window.console = window.console || {}));
 
     var glob = window,
 
@@ -55,7 +55,7 @@
                 combineCalls: 'Why not combine these calls by passing an object? E.g. \n%0(%1)',
                 methodTwice: "You've called %0(%1) more than once on the same jQuery object",
                 triggeredBy: 'Triggered by %0 event',
-                unnecessary: 'Unnecessary method call %0(%1)',
+                notBestMethod: 'Insted of accessing the property via %0(%1), use %2 insted',
                 event: 'Event:',
                 handler: 'Handler:',
                 location: 'Location:',
@@ -85,7 +85,7 @@
                 combineCalls: 'Warum kombinierst du diese Aufrufen nicht, indem du ein Objekt übergibst? z.B. \n%0(%1)',
                 methodTwice: "Du hast %0(%1) mehr als ein mal auf dem selben jQuery-Objekt aufgerufen",
                 triggeredBy: 'Vom %0-Event getriggert',
-                unnecessary: 'Unnoetiger Methodenaufruf %0(%1)',
+                notBestMethod: 'Verwende %2 anstelle von %0(%1)',
                 event: 'Event:',
                 handler: 'Handler:',
                 location: 'Location:',
@@ -749,20 +749,22 @@
         }
     });
 
-    // check for attr('id') - element.id is faster
-    each({'attr': ['id']}, function(method, attributes) {
+    // check for non-ideal property/attribute access ( e.g. attr('id') - element.id is faster)
+    each({'attr': {'id': 'elem.id', 'value': 'jQuery.val()'}}, function(method, attributes) {
         addCheck(method, 3, function() {
-            var argLength = attributes.length;
-            if (typeof arguments !== 'undefined' && argLength > 0 && arguments.length == argLength) {
-                var match = true;
-                for (var m=0; m < argLength; m++) {
-                    if(arguments[m] != attributes[m]) {
-                        match = false;
+            if (typeof arguments !== 'undefined' && typeof attributes === 'object') {
+                var match = false;
+                for (m in arguments) {
+                    if (attributes.hasOwnProperty(arguments[m])) {
+                        match = arguments[m];
                     }
                 }
 
-                if (match === true) {
-                    return lint.langs[lint.lang].unnecessary.replace(/%0/, method).replace(/%1/, attributes.join('\n'));
+                if (match !== false) {
+                    var args = [].splice.call(arguments,0);
+                    return lint.langs[lint.lang].notBestMethod.replace(/%0/, method)
+                                                              .replace(/%1/, args.join(', '))
+                                                              .replace(/%2/, attributes.match);
                 }
             }
         });

@@ -91,11 +91,12 @@ test('css()', function(){
 
 test('attr()', function(){
 
-    expect(3);
+    expect(4);
 
     $('<a/>').attr('rel','a').attr('href', '...');
     $('<a/>').attr('a','b','c','d');
     $('<a/>').attr('id');
+    $('<a/>').attr('value');
 
     $('<a/>').attr('a');
     $('<a/>').attr('b');
