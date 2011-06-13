@@ -58,6 +58,23 @@ test('jQuery()', function(){
 
 });
 
+test('text()/html()', function(){
+    expect(4);
+
+    // working
+    $('<a/>').text('test');
+    $('<a/>').text(5).html(5);
+    $('<a/>').html('<a/>');
+    $('<a/>').text();
+    $('<a/>').html();
+
+    // fail
+    $('<a/>').text({});
+    $('<a/>').html({});
+    $('<a/>').html($('<div/>'));
+    $('<a/>').text($('<div/>'));
+});
+
 test('css()', function(){
 
     expect(2);
@@ -74,11 +91,12 @@ test('css()', function(){
 
 test('attr()', function(){
 
-    expect(3);
+    expect(4);
 
     $('<a/>').attr('rel','a').attr('href', '...');
     $('<a/>').attr('a','b','c','d');
     $('<a/>').attr('id');
+    $('<a/>').attr('value');
 
     $('<a/>').attr('a');
     $('<a/>').attr('b');
@@ -107,7 +125,6 @@ test('data()', function(){
 });
 
 test('bind()', function(){
-
     expect(3);
 
     // Throws error in 1.3:
@@ -116,7 +133,6 @@ test('bind()', function(){
     // Throws error in 1.4:
     $('<a/>').bind('a',function(){}).bind('b', function(){});
 
-
     // These throw errors in both 1.4 and 1.3
     $('<a/>').bind('a','b','c','d');
     $('<a/>').bind('b');
@@ -124,8 +140,31 @@ test('bind()', function(){
     // These should be fine
     $('<a/>').bind('a',function(){}).bind('b', {/*data*/}, function(){});
     $('<a/>').bind('click', {a:1}, function(){});
+});
+
+test('live()/delegate()', function(){
+    if ($.fn.jquery >= '1.4') {
+        expect(2);
+
+        //  failing
+        $('<a/>').live('a','b','c','d');
+        $('<a/>').live('b');
+        $('<a/>').live({});
+
+        // working
+        $('<a/>').live('a',function(){});
+        $('<a/>').live('b', {/*data*/}, function(){});
+        $('<a/>').live('click', {a:1}, function(){});
+    }
+});
 
 
+test('short event-handlers', function(){
+    expect(1);
+
+    $('<a/>').click(function() {});
+    $('#id').click(function() {});
+    $('#qunit-header').click(function() {});
 });
 
 test('repeat selectors', function(){
@@ -474,6 +513,7 @@ test('Test inefficient selectors', function(){
 
     expect(6);
 
+    $('#id, #k928372');
     $('#k928372');
     $('div.k928372');
     var j = $('#qunit-testrunner-toolbar');

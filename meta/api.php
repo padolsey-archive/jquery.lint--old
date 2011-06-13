@@ -103,6 +103,9 @@ class Api_Parser {
                         elseif ($aArg['name'] === 'collection' and $aArg['type'] === 'Object') {
                             $aArg['type'] = 'Object, Array';
                         }
+                        elseif (($aArg['name'] === 'htmlString' or $aArg['name'] === 'textString') and $aArg['type'] === 'String') {
+                            $aArg['type'] = 'String, Number';
+                        }
                         elseif ($aArg['name'] === 'target' and $aArg['type'] === 'Object') {
                             $aArg['type'] = 'Object, Function';
                             $aArg['multiple'] = true;
