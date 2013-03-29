@@ -1,3 +1,5 @@
+**THIS IS NOT IN ACTIVE DEVELOPMENT AND DOES NOT WORK ON NEW VERSION OF jQuery**
+
 jQuery Lint
 ===
 Tested in jQuery 1.4, 1.5 and 1.6 - 1.3.2 is currently not working fine
