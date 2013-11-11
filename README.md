@@ -29,7 +29,7 @@ Now, just use jQuery as you normally would. When you do something that jQuery Li
 
 ![jquery.lint.js preview](http://img13.imageshack.us/img13/9527/lint.png)
         
-**Read more about jQuery Lint in the [wiki](http://wiki.github.com/jamespadolsey/jQuery-Lint/)!**
+**Read more about jQuery Lint in the [wiki](https://github.com/padolsey/jquery.lint--old/wiki)!**
  
 ###License
 
